@@ -8,4 +8,4 @@
 `go build`
 
 ## usage
-run `./lotus --db-driver=dummydb`
+run `./watcher --db-driver=dummydb`
