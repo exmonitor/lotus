@@ -8,8 +8,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/giantswarm/project-lotus/lotus/check"
-	"github.com/giantswarm/project-lotus/lotus/key"
+	"github.com/exmonitor/watcher/check"
+	"github.com/exmonitor/watcher/key"
 )
 
 type CheckConfig struct {

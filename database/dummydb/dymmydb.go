@@ -1,7 +1,7 @@
 package dummydb
 
 import (
-	"github.com/giantswarm/project-lotus/lotus/check"
+	"github.com/exmonitor/watcher/check"
 )
 
 const DBDriverName  = "dummydb"

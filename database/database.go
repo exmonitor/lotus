@@ -2,8 +2,8 @@ package database
 
 import (
 	"fmt"
-	"github.com/giantswarm/project-lotus/lotus/check"
-	"github.com/giantswarm/project-lotus/lotus/database/dummydb"
+	"github.com/exmonitor/watcher/check"
+	"github.com/exmonitor/watcher/database/dummydb"
 	"github.com/pkg/errors"
 )
 

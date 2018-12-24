@@ -10,8 +10,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/giantswarm/project-lotus/lotus/check"
-	"github.com/giantswarm/project-lotus/lotus/database"
+	"github.com/exmonitor/watcher/check"
+	"github.com/exmonitor/watcher/database"
 )
 
 var Flags struct {

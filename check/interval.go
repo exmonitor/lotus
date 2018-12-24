@@ -93,7 +93,6 @@ func (ig *IntervalGroup) runLoop() {
 		}
 		ig.LoopCounterInc()
 	}
-
 }
 
 // returns true if its time to run the interval

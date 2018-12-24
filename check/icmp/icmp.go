@@ -7,8 +7,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sparrc/go-ping"
 
-	"github.com/giantswarm/project-lotus/lotus/check"
-	"github.com/giantswarm/project-lotus/lotus/key"
+	"github.com/exmonitor/watcher/check"
+	"github.com/exmonitor/watcher/key"
 )
 
 const (
@@ -21,7 +21,6 @@ const (
 
 type CheckConfig struct {
 	Id      int
-	ReqId   string
 	Target  string
 	Timeout time.Duration
 

@@ -2,10 +2,10 @@ package dummydb
 
 import (
 	"fmt"
-	"github.com/giantswarm/project-lotus/lotus/check"
-	"github.com/giantswarm/project-lotus/lotus/check/http"
-	"github.com/giantswarm/project-lotus/lotus/check/icmp"
-	"github.com/giantswarm/project-lotus/lotus/check/tcp"
+	"github.com/exmonitor/watcher/check"
+	"github.com/exmonitor/watcher/check/http"
+	"github.com/exmonitor/watcher/check/icmp"
+	"github.com/exmonitor/watcher/check/tcp"
 	"time"
 )
 
