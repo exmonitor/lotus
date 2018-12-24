@@ -1,4 +1,4 @@
-# lotus
+# watcher
 
 ## requirements
 * golang - for building
