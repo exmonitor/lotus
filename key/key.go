@@ -6,6 +6,12 @@ import (
 	"time"
 )
 
+const (
+	ServiceTypeHttp = 0
+	ServiceTypeTcp  = 1
+	ServiceTypeIcmp = 2
+)
+
 func MsFromDuration(d time.Duration) string {
 	return fmt.Sprintf("%.2f", float64(d.Nanoseconds())/1000000.0)
 }

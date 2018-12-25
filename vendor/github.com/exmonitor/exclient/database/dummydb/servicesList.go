@@ -1,15 +1,7 @@
 package dummydb
 
-import (
-	"fmt"
-	"github.com/exmonitor/watcher/check"
-	"github.com/exmonitor/watcher/check/http"
-	"github.com/exmonitor/watcher/check/icmp"
-	"github.com/exmonitor/watcher/check/tcp"
-	"time"
-)
-
-func getTestHttpChecks(dbClient check.DBInterface) (array []check.CheckInterface) {
+/*
+func getTestHttpChecks() (array []service.CheckInterface) {
 	httpConfig1 := http.CheckConfig{
 		Id:      1,
 		Port:    80,
@@ -25,7 +17,6 @@ func getTestHttpChecks(dbClient check.DBInterface) (array []check.CheckInterface
 		ContentCheckEnabled:  false,
 		TlsCheckCertificates: false,
 
-		DBClient: dbClient,
 	}
 	http1, err := http.NewHttpCheck(httpConfig1)
 	if err != nil {
@@ -48,7 +39,6 @@ func getTestHttpChecks(dbClient check.DBInterface) (array []check.CheckInterface
 		TlsCheckCertificates:       true,
 		TlsCertExpirationThreshold: time.Hour * 24 * 30,
 
-		DBClient: dbClient,
 	}
 	http2, err := http.NewHttpCheck(httpConfig2)
 	if err != nil {
@@ -70,7 +60,6 @@ func getTestHttpChecks(dbClient check.DBInterface) (array []check.CheckInterface
 		ContentCheckEnabled:  false,
 		TlsCheckCertificates: false,
 
-		DBClient: dbClient,
 	}
 	http3, err := http.NewHttpCheck(httpConfig3)
 	if err != nil {
@@ -80,13 +69,12 @@ func getTestHttpChecks(dbClient check.DBInterface) (array []check.CheckInterface
 	return append(array, http1, http2, http3)
 }
 
-func getTestICMPChecks(dbClient check.DBInterface) (array []check.CheckInterface) {
+func getTestICMPChecks() (array []service.CheckInterface) {
 	icmpConfig1 := icmp.CheckConfig{
 		Id:      4,
 		Target:  "8.8.8.8",
 		Timeout: time.Second * 3,
 
-		DBClient: dbClient,
 	}
 	icmp1, err := icmp.NewCheck(icmpConfig1)
 	if err != nil {
@@ -98,7 +86,6 @@ func getTestICMPChecks(dbClient check.DBInterface) (array []check.CheckInterface
 		Target:  "1.1.1.1",
 		Timeout: time.Second * 2,
 
-		DBClient: dbClient,
 	}
 	icmp2, err := icmp.NewCheck(icmpConfig2)
 	if err != nil {
@@ -110,7 +97,6 @@ func getTestICMPChecks(dbClient check.DBInterface) (array []check.CheckInterface
 		Target:  "8.8.8.8",
 		Timeout: time.Second * 1,
 
-		DBClient: dbClient,
 	}
 	icmp3, err := icmp.NewCheck(icmpConfig3)
 	if err != nil {
@@ -121,14 +107,13 @@ func getTestICMPChecks(dbClient check.DBInterface) (array []check.CheckInterface
 
 }
 
-func getTestTCPChecks(dbClient check.DBInterface) (array []check.CheckInterface) {
+func getTestTCPChecks() (array []service.CheckInterface) {
 	tcpConfig1 := tcp.CheckConfig{
 		Id:      7,
 		Target:  "seznam.cz",
 		Port:    80,
 		Timeout: time.Second * 2,
 
-		DBClient: dbClient,
 	}
 	tcp1, err := tcp.NewCheck(tcpConfig1)
 	if err != nil {
@@ -141,7 +126,6 @@ func getTestTCPChecks(dbClient check.DBInterface) (array []check.CheckInterface)
 		Port:    80,
 		Timeout: time.Second * 2,
 
-		DBClient: dbClient,
 	}
 	tcp2, err := tcp.NewCheck(tcpConfig2)
 	if err != nil {
@@ -154,7 +138,6 @@ func getTestTCPChecks(dbClient check.DBInterface) (array []check.CheckInterface)
 		Port:    80,
 		Timeout: time.Second * 2,
 
-		DBClient: dbClient,
 	}
 	tcp3, err := tcp.NewCheck(tcpConfig3)
 	if err != nil {
@@ -163,3 +146,5 @@ func getTestTCPChecks(dbClient check.DBInterface) (array []check.CheckInterface)
 
 	return append(array, tcp1, tcp2, tcp3)
 }
+
+*/

@@ -4,15 +4,17 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/exmonitor/exclient/database"
+	"github.com/exmonitor/exlogger"
 	"github.com/pkg/errors"
 
-	"github.com/exmonitor/watcher/check"
 	"github.com/exmonitor/watcher/key"
+	"github.com/exmonitor/watcher/service/spec"
+	"github.com/exmonitor/watcher/service/status"
 )
 
 const (
@@ -56,7 +58,8 @@ type CheckConfig struct {
 	TlsCertExpirationThreshold time.Duration
 
 	//db client
-	DBClient check.DBInterface
+	DBClient database.ClientInterface
+	Logger   *exlogger.Logger
 }
 
 type Check struct {
@@ -88,10 +91,12 @@ type Check struct {
 	tlsCertExpirationThreshold time.Duration
 
 	// db client
-	dbClient check.DBInterface
+	dbClient database.ClientInterface
+	// logger
+	log *exlogger.Logger
 
 	// internals
-	check.CheckInterface
+	spec.CheckInterface
 }
 
 type HTTPHeader struct {
@@ -100,75 +105,67 @@ type HTTPHeader struct {
 }
 
 func NewHttpCheck(conf CheckConfig) (*Check, error) {
+	if conf.Id == 0 {
+		return nil, errors.Wrap(invalidConfigError, "check.Id must not be zero")
+	}
+	if conf.Port == 0 {
+		return nil, errors.Wrap(invalidConfigError, "check.Port must not be zero")
+	}
+	if conf.Target == "" {
+		return nil, errors.Wrap(invalidConfigError, "check.Target must not be empty")
+	}
+	if conf.Timeout == 0 {
+		return nil, errors.Wrap(invalidConfigError, "check.Timeout must not be zero")
+	}
+	if conf.Method == "" {
+		return nil, errors.Wrap(invalidConfigError, "check.Method must not be empty")
+	}
+	if conf.Method != http.MethodGet && conf.Method != http.MethodHead && conf.Method != http.MethodPost {
+		return nil, errors.Wrap(invalidConfigError, "http method "+conf.Method+" is not supported")
+	}
+	if conf.AuthEnabled && conf.AuthUsername == "" {
+		return nil, errors.Wrapf(invalidConfigError, "check.Username must not be empty, when BasicAuth is enabled")
+	}
+	if len(conf.AllowedHttpStatusCodes) == 0 {
+		conf.AllowedHttpStatusCodes = defaultAllowedStatusCodes
+	}
+	if conf.TlsCheckCertificates && conf.TlsCertExpirationThreshold == 0 {
+		return nil, errors.Wrapf(invalidConfigError, "check.tlsCertExpirationThreshold must not be zero, when tlsCheckCertificates is enabled")
+	}
+	if conf.Logger == nil {
+		return nil, errors.Wrapf(invalidConfigError, "check.Logger must not be nil")
+	}
+	if conf.DBClient == nil {
+		return nil, errors.Wrapf(invalidConfigError, "check.DBClient must not be nil")
+	}
+
 	// init values
-	newCheck := &Check{}
-	{
-		newCheck.id = conf.Id
-		newCheck.port = conf.Port
-		newCheck.target = conf.Target
-		newCheck.timeout = conf.Timeout
+	newCheck := &Check{
+		id:      conf.Id,
+		port:    conf.Port,
+		target:  conf.Target,
+		timeout: conf.Timeout,
 
-		newCheck.method = conf.Method
-		newCheck.query = conf.Query
-		newCheck.extraHeaders = conf.ExtraHeaders
-		newCheck.authEnabled = conf.AuthEnabled
-		newCheck.authUsername = conf.AuthUsername
-		newCheck.authPassword = conf.AuthPassword
+		method:       conf.Method,
+		query:        conf.Query,
+		extraHeaders: conf.ExtraHeaders,
+		authEnabled:  conf.AuthEnabled,
+		authUsername: conf.AuthUsername,
+		authPassword: conf.AuthPassword,
 
-		newCheck.contentCheckEnabled = conf.ContentCheckEnabled
-		newCheck.contentCheckString = conf.ContentCheckString
+		contentCheckEnabled: conf.ContentCheckEnabled,
+		contentCheckString:  conf.ContentCheckString,
 
-		newCheck.allowedHttpStatusCodes = conf.AllowedHttpStatusCodes
+		allowedHttpStatusCodes: conf.AllowedHttpStatusCodes,
 
-		newCheck.tlsSkipVerify = conf.TlsSkipVerify
-		newCheck.tlsCheckCertificates = conf.TlsCheckCertificates
-		newCheck.tlsCertExpirationThreshold = conf.TlsCertExpirationThreshold
+		tlsSkipVerify:              conf.TlsSkipVerify,
+		tlsCheckCertificates:       conf.TlsCheckCertificates,
+		tlsCertExpirationThreshold: conf.TlsCertExpirationThreshold,
 
-		newCheck.dbClient = conf.DBClient
+		log:      conf.Logger,
+		dbClient: conf.DBClient,
 	}
-
-	err := newCheck.validateNewCheck()
-	if err != nil {
-		return nil, err
-	}
-
 	return newCheck, nil
-}
-
-// validate check configuration
-func (c *Check) validateNewCheck() error {
-	if c.id == 0 {
-		return errors.Wrap(invalidConfigError, "check.Id must not be zero")
-	}
-	if c.port == 0 {
-		return errors.Wrap(invalidConfigError, "check.Port must not be zero")
-	}
-	if c.target == "" {
-		return errors.Wrap(invalidConfigError, "check.Target must not be empty")
-	}
-	if c.timeout == 0 {
-		return errors.Wrap(invalidConfigError, "check.Timeout must not be zero")
-	}
-	if c.method == "" {
-		return errors.Wrap(invalidConfigError, "check.Method must not be empty")
-	}
-	if c.method != http.MethodGet && c.method != http.MethodHead && c.method != http.MethodPost {
-		return errors.Wrap(invalidConfigError, "http method "+c.method+" is not supported")
-	}
-	if c.authEnabled && c.authUsername == "" {
-		return errors.Wrapf(invalidConfigError, "check.Username must not be empty, when BasicAuth is enabled")
-	}
-	if len(c.allowedHttpStatusCodes) == 0 {
-		c.allowedHttpStatusCodes = defaultAllowedStatusCodes
-	}
-	if c.tlsCheckCertificates && c.tlsCertExpirationThreshold == 0 {
-		return errors.Wrapf(invalidConfigError, "check.tlsCertExpirationThreshold must not be zero, when tlsCheckCertificates is enabled")
-	}
-	if c.dbClient == nil {
-		return errors.Wrap(invalidConfigError, "check.DbClient must not be nil")
-	}
-
-	return nil
 }
 
 // wrapper function used to run in separate thread (goroutine)
@@ -177,15 +174,15 @@ func (c *Check) RunCheck() {
 	// generate unique request ID
 	c.requestId = key.GenerateReqId(c.id)
 	// run monitoring check
-	status := c.doCheck()
-	c.LogResult(status)
+	s := c.doCheck()
+	c.LogResult(s)
 	// save result to database
-	status.SaveToDB()
+	s.SaveToDB()
 }
 
 // run monitoring check with all options
-func (c *Check) doCheck() *check.Status {
-	status := check.NewStatus(c.dbClient)
+func (c *Check) doCheck() *status.Status {
+	s := status.NewStatus(c.dbClient)
 	tStart := time.Now()
 
 	// set tls config
@@ -207,8 +204,8 @@ func (c *Check) doCheck() *check.Status {
 	req, err := http.NewRequest(c.method, c.target+"/"+c.query, nil)
 	if err != nil {
 		c.LogRunError(err, msgInternalFailedHttpClient)
-		status.Set(false, err, msgInternalFailedHttpClient, "")
-		return status
+		s.Set(false, err, msgInternalFailedHttpClient, "")
+		return s
 	}
 	// set basic auth if its enabled
 	if c.authEnabled {
@@ -220,8 +217,8 @@ func (c *Check) doCheck() *check.Status {
 	// execute http request
 	resp, err := client.Do(req)
 	if err != nil {
-		status.Set(false, err, msgFailedToExecute, "")
-		return status
+		s.Set(false, err, msgFailedToExecute, "")
+		return s
 	} else {
 		httpCodeOK := false
 		// check if http response code is allowed
@@ -232,9 +229,9 @@ func (c *Check) doCheck() *check.Status {
 			}
 		}
 		if !httpCodeOK {
-			msg := fmt.Sprintf("HTTP status code: %d is in within allowed codes %s", resp.StatusCode, c.allowedHttpStatusCodes)
-			status.Set(false, nil, msgFailedBadStatusCode, msg)
-			return status
+			msg := fmt.Sprintf("HTTP s code: %d is in within allowed codes %s", resp.StatusCode, c.allowedHttpStatusCodes)
+			s.Set(false, nil, msgFailedBadStatusCode, msg)
+			return s
 		}
 
 		// check for content
@@ -243,14 +240,14 @@ func (c *Check) doCheck() *check.Status {
 			respData, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
 				c.LogRunError(err, msgInternalFailedToReadResponse)
-				status.Set(false, err, msgInternalFailedToReadResponse, "")
-				return status
+				s.Set(false, err, msgInternalFailedToReadResponse, "")
+				return s
 			}
 			// check if response contains requested content in http body
 			if !strings.Contains(string(respData), c.contentCheckString) {
 				msg := "the page successfully retrieved, but the required content was not found"
-				status.Set(false, nil, msgFailedContentNotFound, msg)
-				return status
+				s.Set(false, nil, msgFailedContentNotFound, msg)
+				return s
 			}
 		}
 	}
@@ -258,15 +255,15 @@ func (c *Check) doCheck() *check.Status {
 	if c.tlsCheckCertificates {
 		certsOK, message := c.checkTLS(resp.TLS)
 		if !certsOK {
-			status.Set(false, nil, msgFailedCertExpired, message)
-			return status
+			s.Set(false, nil, msgFailedCertExpired, message)
+			return s
 		}
 	}
 
-	status.Duration = time.Since(tStart)
-	status.Set(true, nil, check.MsgSuccess, "")
+	s.Duration = time.Since(tStart)
+	s.Set(true, nil, "success", "")
 
-	return status
+	return s
 }
 
 // redirect policy, in case the target URL is not real page but is redirecting to somewhere else
@@ -306,7 +303,7 @@ func (c *Check) checkTLS(conn *tls.ConnectionState) (bool, string) {
 	return certsOK, message
 }
 
-func (c *Check) LogResult(s *check.Status) {
+func (c *Check) LogResult(s *status.Status) {
 	logMessage := s.Message
 	if s.ExtraInfo != "" {
 		logMessage += ", ExtraInfo: " + s.ExtraInfo
@@ -315,9 +312,9 @@ func (c *Check) LogResult(s *check.Status) {
 		logMessage += ", Error: " + s.Error.Error()
 	}
 
-	log.Printf("INFO|check-HTTP|id %d|reqID %s|target %s|port %d|latency %sms|result '%t'|msg: %s", c.id, c.requestId, c.target, c.port, key.MsFromDuration(s.Duration), s.Result, logMessage)
+	c.log.Log("check-HTTP|id %d|reqID %s|target %s|port %d|latency %sms|result '%t'|msg: %s", c.id, c.requestId, c.target, c.port, key.MsFromDuration(s.Duration), s.Result, logMessage)
 }
 
 func (c *Check) LogRunError(err error, message string) {
-	log.Printf("ERROR| running check id:%d reqID:%s type:http/https target:%s failed with error:%s, reason: %s", c.id, c.requestId, c.target, err, message)
+	c.log.LogError(err, "running check id:%d reqID:%s type:http/https target:%s failed, reason: %s", c.id, c.requestId, c.target, message)
 }

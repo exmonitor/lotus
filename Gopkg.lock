@@ -2,6 +2,32 @@
 
 
 [[projects]]
+  branch = "master"
+  name = "github.com/exmonitor/exclient"
+  packages = [
+    ".",
+    "database",
+    "database/dummydb",
+    "database/multi",
+    "database/spec/notification",
+    "database/spec/service",
+    "database/spec/status"
+  ]
+  revision = "c536779c7d6f36c4200cff0e5f09a324ed5faa20"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/exmonitor/exlogger"
+  packages = ["."]
+  revision = "a9f8a7a79c8e24ca9e206034c8bbaba9973445c8"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/exmonitor/firefly"
+  packages = ["log"]
+  revision = "6a37566a661c8f3b432a5b486870ae2db967d8d5"
+
+[[projects]]
   name = "github.com/inconshreveable/mousetrap"
   packages = ["."]
   revision = "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
@@ -42,11 +68,11 @@
     "ipv4",
     "ipv6"
   ]
-  revision = "adae6a3d119ae4890b46832a2e88a95adc62b8e7"
+  revision = "927f97764cc334a6575f4b7a1584a147864d5723"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "95d8d6f38656d318254695202738581b8cfba86c7b4ec9d7fe87ecbc5942b151"
+  inputs-digest = "4da80c41c4d17201fff95281d0e299e429336f54eeab565943ccee5b2660427c"
   solver-name = "gps-cdcl"
   solver-version = 1
