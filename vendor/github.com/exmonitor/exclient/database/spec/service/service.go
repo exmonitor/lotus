@@ -14,7 +14,7 @@ type Service struct {
 func (s *Service) ServiceTypeString() string {
 	switch s.Type {
 	case 0:
-		return "http/https"
+		return "http"
 	case 1:
 		return "tcp"
 	case 2:

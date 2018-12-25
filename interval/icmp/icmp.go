@@ -5,11 +5,12 @@ import (
 
 	"github.com/sparrc/go-ping"
 
+	"fmt"
 	"github.com/exmonitor/exclient/database"
 	"github.com/exmonitor/exlogger"
+	"github.com/exmonitor/watcher/interval/spec"
+	"github.com/exmonitor/watcher/interval/status"
 	"github.com/exmonitor/watcher/key"
-	"github.com/exmonitor/watcher/service/spec"
-	"github.com/exmonitor/watcher/service/status"
 	"github.com/pkg/errors"
 )
 
@@ -85,7 +86,10 @@ func (c *Check) RunCheck() {
 }
 
 func (c *Check) doCheck() *status.Status {
-	s := status.NewStatus(c.dbClient)
+	s, err := status.NewStatus(c.dbClient)
+	if err != nil {
+		c.LogRunError(err, fmt.Sprintf("failed to init new status for ICMP service ID %d", c.id))
+	}
 	tStart := time.Now()
 
 	pinger, err := ping.NewPinger(c.target)

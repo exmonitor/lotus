@@ -13,19 +13,13 @@
     "database/spec/service",
     "database/spec/status"
   ]
-  revision = "c536779c7d6f36c4200cff0e5f09a324ed5faa20"
+  revision = "ca27cb9201128da93345d3b4640b33799405269b"
 
 [[projects]]
   branch = "master"
   name = "github.com/exmonitor/exlogger"
   packages = ["."]
   revision = "a9f8a7a79c8e24ca9e206034c8bbaba9973445c8"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/exmonitor/firefly"
-  packages = ["log"]
-  revision = "6a37566a661c8f3b432a5b486870ae2db967d8d5"
 
 [[projects]]
   name = "github.com/inconshreveable/mousetrap"
@@ -73,6 +67,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4da80c41c4d17201fff95281d0e299e429336f54eeab565943ccee5b2660427c"
+  inputs-digest = "b08e97dd8dda5029b176dbf84a0240dba90fb5c51215b5893c840a8380c9bdf2"
   solver-name = "gps-cdcl"
   solver-version = 1

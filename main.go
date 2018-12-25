@@ -10,7 +10,7 @@ import (
 
 	"github.com/exmonitor/exclient"
 	"github.com/exmonitor/exlogger"
-	"github.com/exmonitor/watcher/service"
+	"github.com/exmonitor/watcher/interval"
 )
 
 var Flags struct {
@@ -56,7 +56,7 @@ func main() {
 
 	// database
 	rootCmd.PersistentFlags().StringVarP(&flags.DBDriver, "db-driver", "", "dummydb", "Set database driver that wil be used for connection")
-	rootCmd.PersistentFlags().StringVarP(&flags.ElasticConnection, "db-server", "", "", "Set elastic connection string.")
+	rootCmd.PersistentFlags().StringVarP(&flags.ElasticConnection, "elastic-connection", "", "", "Set elastic connection string.")
 	rootCmd.PersistentFlags().StringVarP(&flags.MariaConnection, "maria-connection", "", "", "Set maria database connection string.")
 	rootCmd.PersistentFlags().StringVarP(&flags.MariaUser, "maria-user", "", "", "Set Maria database user that wil be used for connection.")
 	rootCmd.PersistentFlags().StringVarP(&flags.MariaPassword, "maria-password", "", "", "Set Maria database password that will be used for connection.")
@@ -110,7 +110,7 @@ func mainExecute(cmd *cobra.Command, args []string) {
 		panic(err)
 	}
 	// create thread for each intervalGroup
-	service.InitIntervalGroups(intervalGroups, dbClient, logger)
+	interval.InitIntervalGroups(intervalGroups, dbClient, logger)
 
 	// sleep little friend
 	fmt.Printf(">> Main thread sleeping forever ...\n")

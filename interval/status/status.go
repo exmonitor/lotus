@@ -3,6 +3,7 @@ package status
 import (
 	"github.com/exmonitor/exclient/database"
 	"github.com/exmonitor/exclient/database/spec/status"
+	"github.com/pkg/errors"
 	"time"
 )
 
@@ -18,12 +19,18 @@ type Status struct {
 	DBClient database.ClientInterface
 }
 
-func NewStatus(dbClient database.ClientInterface) *Status {
-	return &Status{
+func NewStatus(dbClient database.ClientInterface) (*Status, error) {
+	if dbClient == nil {
+		return nil, errors.Wrap(invalidConfigError, "dbClient must not be nil")
+	}
+
+	newStatus := &Status{
 		Result:   false,
 		Error:    nil,
 		DBClient: dbClient,
 	}
+
+	return newStatus, nil
 }
 
 func (s *Status) Set(result bool, err error, msg string, extraMsg string) {
