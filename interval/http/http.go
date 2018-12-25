@@ -207,7 +207,7 @@ func (c *Check) doCheck() *status.Status {
 		CheckRedirect: c.redirectPolicyFunc,
 	}
 	// prepare http request
-	req, err := http.NewRequest(c.method, c.target+"/"+c.query, nil)
+	req, err := http.NewRequest(c.method, c.target+"/"+c.query, c.getPostData())
 	if err != nil {
 		c.LogRunError(err, msgInternalFailedHttpClient)
 		s.Set(false, err, msgInternalFailedHttpClient, "")
@@ -216,9 +216,6 @@ func (c *Check) doCheck() *status.Status {
 	// set basic auth if its enabled
 	if c.authEnabled {
 		req.SetBasicAuth(c.authUsername, c.authPassword)
-	}
-	if c.method == http.MethodPost && len(c.postData) > 0 {
-		c.addPostData(req)
 	}
 
 	// add all extra http headers
@@ -283,10 +280,6 @@ func (c *Check) redirectPolicyFunc(req *http.Request, via []*http.Request) error
 	if c.authEnabled {
 		req.SetBasicAuth(c.authUsername, c.authPassword)
 	}
-	// add post data
-	if c.method == http.MethodPost && len(c.postData) > 0 {
-		c.addPostData(req)
-	}
 	// add all extra http headers
 	c.addExtraHeaders(req)
 
@@ -302,12 +295,13 @@ func (c *Check) addExtraHeaders(req *http.Request) {
 }
 
 // add post data
-func (c *Check) addPostData(req *http.Request) {
+func (c *Check) getPostData() *strings.Reader {
 	form := url.Values{}
 	for _, item := range c.postData {
 		form.Add(item.Name, item.Value)
 	}
-	req.PostForm = form
+	return strings.NewReader(form.Encode())
+
 }
 
 // check TTL of tls certs
