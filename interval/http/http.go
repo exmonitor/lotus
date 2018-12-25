@@ -15,6 +15,7 @@ import (
 	"github.com/exmonitor/watcher/interval/spec"
 	"github.com/exmonitor/watcher/interval/status"
 	"github.com/exmonitor/watcher/key"
+	"net/url"
 )
 
 const (
@@ -216,6 +217,10 @@ func (c *Check) doCheck() *status.Status {
 	if c.authEnabled {
 		req.SetBasicAuth(c.authUsername, c.authPassword)
 	}
+	if c.method == http.MethodPost && len(c.postData) > 0 {
+		c.addPostData(req)
+	}
+
 	// add all extra http headers
 	c.addExtraHeaders(req)
 
@@ -278,6 +283,10 @@ func (c *Check) redirectPolicyFunc(req *http.Request, via []*http.Request) error
 	if c.authEnabled {
 		req.SetBasicAuth(c.authUsername, c.authPassword)
 	}
+	// add post data
+	if c.method == http.MethodPost && len(c.postData) > 0 {
+		c.addPostData(req)
+	}
 	// add all extra http headers
 	c.addExtraHeaders(req)
 
@@ -290,6 +299,15 @@ func (c *Check) addExtraHeaders(req *http.Request) {
 	for i := 0; i < len(c.extraHeaders); i++ {
 		req.Header.Add(c.extraHeaders[i].Name, c.extraHeaders[i].Value)
 	}
+}
+
+// add post data
+func (c *Check) addPostData(req *http.Request) {
+	form := url.Values{}
+	for _, item := range c.postData {
+		form.Add(item.Name, item.Value)
+	}
+	req.PostForm = form
 }
 
 // check TTL of tls certs
