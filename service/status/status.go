@@ -1,6 +1,8 @@
-package check
+package status
 
 import (
+	"github.com/exmonitor/exclient/database"
+	"github.com/exmonitor/exclient/database/spec/status"
 	"time"
 )
 
@@ -13,10 +15,10 @@ type Status struct {
 	Message   string
 	ExtraInfo string
 
-	DBClient DBInterface
+	DBClient database.ClientInterface
 }
 
-func NewStatus(dbClient DBInterface) *Status {
+func NewStatus(dbClient database.ClientInterface) *Status {
 	return &Status{
 		Result:   false,
 		Error:    nil,
@@ -36,5 +38,11 @@ func (s *Status) Set(result bool, err error, msg string, extraMsg string) {
 }
 
 func (s *Status) SaveToDB() {
-	s.DBClient.SaveCheckStatus(s)
+	serviceStatus := &status.ServiceStatus{
+		Id:     s.Id,
+		Result: s.Result,
+		// TODO
+	}
+
+	s.DBClient.ES_SaveServiceStatus(serviceStatus)
 }
