@@ -121,9 +121,9 @@ func (c *Client) ES_GetFailedServices(from time.Time, to time.Time, interval int
 	return statusArray, nil
 }
 
-func (c *Config) ES_SaveServiceStatus(s *status.ServiceStatus) error {
+func (c *Client) ES_SaveServiceStatus(s *status.ServiceStatus) error {
 	// TODO
-	fmt.Printf("ES_SaveServiceStatus - NOT IMPLEMENTED")
+	fmt.Printf("ES_SaveServiceStatus - NOT IMPLEMENTED\n")
 	return nil
 }
 
@@ -184,39 +184,14 @@ func (c *Client) SQL_GetUsersNotificationSettings(checkId int) ([]*notification.
 func (c *Client) SQL_GetServices(interval int) ([]*service.Service, error) {
 	var services []*service.Service
 
-	if interval == 10 {
-		s1 := &service.Service{
-			ID:            1,
-			Type:          0,
-			Target:        "seznam.cz",
-			Interval:      10,
-			FailThreshold: 5,
-			Host:          "myhost",
-			Metadata:      "",
-		}
-		s2 := &service.Service{
-			ID:            2,
-			Type:          1,
-			Target:        "seznam.cz",
-			Interval:      10,
-			FailThreshold: 5,
-			Host:          "myhost",
-			Metadata:      "",
-		}
-
-		services = append(services, s1)
-		services = append(services, s2)
-	}
-
 	if interval == 30 {
 		s1 := &service.Service{
 			ID:            3,
 			Type:          1,
-			Target:        "seznam.cz",
-			Interval:      10,
+			Interval:      30,
 			FailThreshold: 5,
 			Host:          "myhost",
-			Metadata:      "",
+			Metadata:      `{"id": 3,"target": "seznam.cz","port": 1234,"timeout": 5}`,
 		}
 
 		services = append(services, s1)
@@ -226,14 +201,56 @@ func (c *Client) SQL_GetServices(interval int) ([]*service.Service, error) {
 		s1 := &service.Service{
 			ID:            4,
 			Type:          2,
-			Target:        "seznam.cz",
-			Interval:      10,
+			Interval:      60,
 			FailThreshold: 5,
 			Host:          "myhost",
-			Metadata:      "",
+			Metadata:      `{"id": 4,"target": "seznam.cz","timeout": 5}`,
+		}
+
+		s2 := &service.Service{
+			ID:            5,
+			Type:          0,
+			Interval:      60,
+			FailThreshold: 3,
+			Host:          "myhost",
+			Metadata: `{
+	"id": 1,
+	"port": 443,
+	"target": "https://master.cz",
+	"timeout": 5,
+	"method": "GET",
+	"query": "?var1=value1&var2=value2",
+	"postData": [
+		{
+			"name": "var1",
+			"value": "value1"
+		}
+	],
+	"extraHeaders": [
+		{
+			"name": "MyHeader",
+			"value": "My Value"
+		}
+	],
+	"authEnabled": false,
+	"authUsername": "admin",
+	"authPassword": "adminPass",
+	"contentCheckEnabled": false,
+	"contentCheckString": "my_string",
+	"allowedHttpStatusCodes": [
+		200,
+		201,
+		403,
+		404
+	],
+	"tlsSkipVerify": false,
+	"tlsCheckCertificates": true,
+	"tlsCertExpirationThreshold": 10
+}`,
 		}
 
 		services = append(services, s1)
+		services = append(services, s2)
 	}
 
 	return services, nil

@@ -1,6 +1,6 @@
 package spec
 
-import "github.com/exmonitor/watcher/service/status"
+import "github.com/exmonitor/watcher/interval/status"
 
 type CheckInterface interface {
 	RunCheck()

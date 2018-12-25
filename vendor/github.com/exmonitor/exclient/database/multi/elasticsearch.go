@@ -12,13 +12,13 @@ import (
 ///--------------------------------------------------
 func (c *Client) ES_GetFailedServices(from time.Time, to time.Time, interval int) ([]*status.ServiceStatus, error) {
 	// just dummy record return
-	fmt.Printf("ES_GetFailedServices - NOT IMPLEMENTED")
+	fmt.Printf("ES_GetFailedServices - NOT IMPLEMENTED\n")
 
 	return nil, nil
 }
 
-func (c *Config) ES_SaveServiceStatus(s *status.ServiceStatus) error {
+func (c *Client) ES_SaveServiceStatus(s *status.ServiceStatus) error {
 	// TODO
-	fmt.Printf("ES_SaveServiceStatus - NOT IMPLEMENTED")
+	fmt.Printf("ES_SaveServiceStatus - NOT IMPLEMENTED\n")
 	return nil
 }

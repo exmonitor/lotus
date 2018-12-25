@@ -1,4 +1,4 @@
-package service
+package interval
 
 import (
 	"fmt"
@@ -8,11 +8,11 @@ import (
 	"github.com/exmonitor/exclient/database/spec/service"
 
 	"github.com/exmonitor/exlogger"
+	"github.com/exmonitor/watcher/interval/http"
+	"github.com/exmonitor/watcher/interval/icmp"
+	"github.com/exmonitor/watcher/interval/spec"
+	"github.com/exmonitor/watcher/interval/tcp"
 	"github.com/exmonitor/watcher/key"
-	"github.com/exmonitor/watcher/service/http"
-	"github.com/exmonitor/watcher/service/icmp"
-	"github.com/exmonitor/watcher/service/spec"
-	"github.com/exmonitor/watcher/service/tcp"
 	"github.com/pkg/errors"
 )
 
@@ -84,12 +84,15 @@ func (ig *IntervalGroup) Boot() {
 			if err != nil {
 				ig.logger.LogError(err, "failed to fetch services for interval %d", ig.intervalSec)
 			}
-			ig.logger.Log("fetched %d services from db for interval %d tick, interval %ds", len(services), ig.intervalSec)
+			ig.logger.Log("fetched %d services from db for interval %d", len(services), ig.intervalSec)
 
 		}
 
 		// parse metada and than run each service in separate goroutine
 		for _, s := range services {
+			// TODO caching of already loaded services, we can introduce md5 of metadata to check if there sia ny change
+			// TODO parsing each time is quite time expensive
+
 			var check spec.CheckInterface
 			switch s.Type {
 			case key.ServiceTypeHttp:

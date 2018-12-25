@@ -12,9 +12,9 @@ import (
 	"github.com/exmonitor/exlogger"
 	"github.com/pkg/errors"
 
+	"github.com/exmonitor/watcher/interval/spec"
+	"github.com/exmonitor/watcher/interval/status"
 	"github.com/exmonitor/watcher/key"
-	"github.com/exmonitor/watcher/service/spec"
-	"github.com/exmonitor/watcher/service/status"
 )
 
 const (
@@ -40,7 +40,8 @@ type CheckConfig struct {
 	// protocol specific options
 	Method       string
 	Query        string
-	ExtraHeaders []HTTPHeader
+	PostData     []HTTPKeyValue
+	ExtraHeaders []HTTPKeyValue
 	AuthEnabled  bool
 	AuthUsername string
 	AuthPassword string
@@ -73,7 +74,8 @@ type Check struct {
 	// protocol specific options
 	method       string
 	query        string
-	extraHeaders []HTTPHeader
+	postData     []HTTPKeyValue
+	extraHeaders []HTTPKeyValue
 	authEnabled  bool
 	authUsername string
 	authPassword string
@@ -99,12 +101,12 @@ type Check struct {
 	spec.CheckInterface
 }
 
-type HTTPHeader struct {
-	Key   string
-	Value string
+type HTTPKeyValue struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
 }
 
-func NewHttpCheck(conf CheckConfig) (*Check, error) {
+func New(conf CheckConfig) (*Check, error) {
 	if conf.Id == 0 {
 		return nil, errors.Wrap(invalidConfigError, "check.Id must not be zero")
 	}
@@ -182,7 +184,10 @@ func (c *Check) RunCheck() {
 
 // run monitoring check with all options
 func (c *Check) doCheck() *status.Status {
-	s := status.NewStatus(c.dbClient)
+	s, err := status.NewStatus(c.dbClient)
+	if err != nil {
+		c.LogRunError(err, fmt.Sprintf("failed to init new status for ICMP service ID %d", c.id))
+	}
 	tStart := time.Now()
 
 	// set tls config
@@ -283,7 +288,7 @@ func (c *Check) redirectPolicyFunc(req *http.Request, via []*http.Request) error
 func (c *Check) addExtraHeaders(req *http.Request) {
 	// add all extra http headers
 	for i := 0; i < len(c.extraHeaders); i++ {
-		req.Header.Add(c.extraHeaders[i].Key, c.extraHeaders[i].Value)
+		req.Header.Add(c.extraHeaders[i].Name, c.extraHeaders[i].Value)
 	}
 }
 
