@@ -27,6 +27,10 @@ func GetClient(config Config) *Client {
 	return &Client{}
 }
 
+func (c *Client) Close() {
+
+}
+
 var dummyDBStatusCounter = 0
 var dummyDBStatusIncreaser = 1
 
@@ -187,7 +191,7 @@ func (c *Client) SQL_GetServices(interval int) ([]*service.Service, error) {
 	if interval == 30 {
 		s1 := &service.Service{
 			ID:            3,
-			Type:          1,
+			Type:          2,
 			Interval:      30,
 			FailThreshold: 5,
 			Host:          "myhost",
@@ -200,7 +204,7 @@ func (c *Client) SQL_GetServices(interval int) ([]*service.Service, error) {
 	if interval == 60 {
 		s1 := &service.Service{
 			ID:            4,
-			Type:          2,
+			Type:          3,
 			Interval:      60,
 			FailThreshold: 5,
 			Host:          "myhost",
@@ -209,7 +213,7 @@ func (c *Client) SQL_GetServices(interval int) ([]*service.Service, error) {
 
 		s2 := &service.Service{
 			ID:            5,
-			Type:          0,
+			Type:          1,
 			Interval:      60,
 			FailThreshold: 3,
 			Host:          "myhost",
@@ -263,7 +267,7 @@ func (c *Client) SQL_GetServiceDetails(checkID int) (*service.Service, error) {
 			ID:            1,
 			Host:          "myServer1",
 			Target:        "web.myserver.com",
-			Type:          1,
+			Type:          2,
 			FailThreshold: 5,
 			Interval:      30,
 		}
@@ -272,7 +276,7 @@ func (c *Client) SQL_GetServiceDetails(checkID int) (*service.Service, error) {
 			ID:            2,
 			Host:          "myWeb1",
 			Target:        "webik.com",
-			Type:          1,
+			Type:          2,
 			FailThreshold: 5,
 			Interval:      30,
 		}
@@ -282,7 +286,7 @@ func (c *Client) SQL_GetServiceDetails(checkID int) (*service.Service, error) {
 			ID:            3,
 			Host:          "bigServer",
 			Target:        "seznam.com",
-			Type:          1,
+			Type:          2,
 			FailThreshold: 3,
 			Interval:      30,
 		}
@@ -292,7 +296,7 @@ func (c *Client) SQL_GetServiceDetails(checkID int) (*service.Service, error) {
 			ID:            4,
 			Host:          "myICMPTestServer",
 			Target:        "google.com",
-			Type:          2,
+			Type:          3,
 			FailThreshold: 3,
 			Interval:      30,
 		}

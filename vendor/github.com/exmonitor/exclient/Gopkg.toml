@@ -23,10 +23,15 @@
 #   non-go = false
 #   go-tests = true
 #   unused-packages = true
-[[constraint]]
-  name = "github.com/exmonitor/exclient"
-  branch = "master"
 
+
+[[constraint]]
+  name = "github.com/go-sql-driver/mysql"
+  version = "1.4.1"
+
+[[constraint]]
+  name = "github.com/pkg/errors"
+  version = "0.8.0"
 
 [prune]
   go-tests = true

@@ -17,6 +17,7 @@ Example metadata:
 	"port": 443,
 	"target": "test.domain.cz",
 	"timeout": 5,
+    "proto": "http",
 	"method": "GET",
 	"query": "?var1=value1&var2=value2",
 	"postData": [
@@ -53,6 +54,7 @@ type RawCheck struct {
 	Port                       int            `json:"port"`
 	Target                     string         `json:"target"`
 	Timeout                    int            `json:"timeout"`
+	Proto                      string         `json:"proto"`
 	Method                     string         `json:"method"`
 	Query                      string         `json:"query"`
 	PostData                   []HTTPKeyValue `json:"postData"`
@@ -82,6 +84,7 @@ func ParseCheck(service *service.Service, dbClient database.ClientInterface, log
 		Port:                       rawCheck.Port,
 		Target:                     rawCheck.Target,
 		Timeout:                    time.Second * time.Duration(rawCheck.Timeout),
+		Proto:                      rawCheck.Proto,
 		Method:                     rawCheck.Method,
 		Query:                      rawCheck.Query,
 		PostData:                   rawCheck.PostData,

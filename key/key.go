@@ -7,9 +7,10 @@ import (
 )
 
 const (
-	ServiceTypeHttp = 0
-	ServiceTypeTcp  = 1
-	ServiceTypeIcmp = 2
+	// same as in table `service_type`
+	ServiceTypeHttp = 1
+	ServiceTypeTcp  = 2
+	ServiceTypeIcmp = 3
 )
 
 func MsFromDuration(d time.Duration) string {
