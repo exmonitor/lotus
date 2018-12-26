@@ -39,6 +39,7 @@ type CheckConfig struct {
 	Timeout time.Duration
 
 	// protocol specific options
+	Proto        string // http or https
 	Method       string
 	Query        string
 	PostData     []HTTPKeyValue
@@ -73,6 +74,7 @@ type Check struct {
 	timeout   time.Duration
 
 	// protocol specific options
+	proto        string
 	method       string
 	query        string
 	postData     []HTTPKeyValue
@@ -149,6 +151,7 @@ func New(conf CheckConfig) (*Check, error) {
 		target:  conf.Target,
 		timeout: conf.Timeout,
 
+		proto:        conf.Proto,
 		method:       conf.Method,
 		query:        conf.Query,
 		extraHeaders: conf.ExtraHeaders,
@@ -199,15 +202,18 @@ func (c *Check) doCheck() *status.Status {
 	transportConf := &http.Transport{
 		ResponseHeaderTimeout: c.timeout,
 		IdleConnTimeout:       c.timeout,
+		ExpectContinueTimeout: c.timeout,
+		TLSHandshakeTimeout:   c.timeout,
 		TLSClientConfig:       tlsConfig,
 	}
 	// initialize http client
 	client := http.Client{
 		Transport:     transportConf,
+		Timeout:       c.timeout,
 		CheckRedirect: c.redirectPolicyFunc,
 	}
 	// prepare http request
-	req, err := http.NewRequest(c.method, c.target+"/"+c.query, c.getPostData())
+	req, err := http.NewRequest(c.method, c.url(), c.getPostData())
 	if err != nil {
 		c.LogRunError(err, msgInternalFailedHttpClient)
 		s.Set(false, err, msgInternalFailedHttpClient, "")
@@ -304,6 +310,10 @@ func (c *Check) getPostData() *strings.Reader {
 
 }
 
+func (c *Check) url() string {
+	return fmt.Sprintf("%s://%s/%s", c.proto, c.target, c.query)
+}
+
 // check TTL of tls certs
 func (c *Check) checkTLS(conn *tls.ConnectionState) (bool, string) {
 	certsOK := true
@@ -329,7 +339,7 @@ func (c *Check) LogResult(s *status.Status) {
 		logMessage += ", Error: " + s.Error.Error()
 	}
 
-	c.log.Log("check-HTTP|id %d|reqID %s|target %s|port %d|latency %sms|result '%t'|msg: %s", c.id, c.requestId, c.target, c.port, key.MsFromDuration(s.Duration), s.Result, logMessage)
+	c.log.Log("check-HTTP|id %d|reqID %s|target %s|proto %s|port %d|latency %sms|result '%t'|msg: %s", c.id, c.requestId, c.target, c.proto, c.port, key.MsFromDuration(s.Duration), s.Result, logMessage)
 }
 
 func (c *Check) LogRunError(err error, message string) {

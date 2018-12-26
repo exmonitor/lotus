@@ -3,6 +3,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/exmonitor/chronos"
+  packages = ["."]
+  revision = "35f8920fcfb988c291b8f15ee355d2fdcb4f3627"
+
+[[projects]]
+  branch = "master"
   name = "github.com/exmonitor/exclient"
   packages = [
     ".",
@@ -13,13 +19,19 @@
     "database/spec/service",
     "database/spec/status"
   ]
-  revision = "ca27cb9201128da93345d3b4640b33799405269b"
+  revision = "2068b8a625d1917d0b466dbc42d5b56fb783ad79"
 
 [[projects]]
   branch = "master"
   name = "github.com/exmonitor/exlogger"
   packages = ["."]
   revision = "a9f8a7a79c8e24ca9e206034c8bbaba9973445c8"
+
+[[projects]]
+  name = "github.com/go-sql-driver/mysql"
+  packages = ["."]
+  revision = "72cd26f257d44c1114970e19afddcd812016007e"
+  version = "v1.4.1"
 
 [[projects]]
   name = "github.com/inconshreveable/mousetrap"
@@ -64,9 +76,15 @@
   ]
   revision = "927f97764cc334a6575f4b7a1584a147864d5723"
 
+[[projects]]
+  name = "google.golang.org/appengine"
+  packages = ["cloudsql"]
+  revision = "e9657d882bb81064595ca3b56cbe2546bbabf7b1"
+  version = "v1.4.0"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "b08e97dd8dda5029b176dbf84a0240dba90fb5c51215b5893c840a8380c9bdf2"
+  inputs-digest = "3c1eaa159d660fb87a860894f97cec835b76eea62115a38205e7b05b0dd9ccb7"
   solver-name = "gps-cdcl"
   solver-version = 1

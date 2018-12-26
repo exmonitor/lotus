@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/exmonitor/exclient"
+	"github.com/exmonitor/exclient/database"
 	"github.com/exmonitor/exlogger"
 	"github.com/exmonitor/watcher/interval"
 )
@@ -26,6 +27,7 @@ var Flags struct {
 	DBDriver          string
 	ElasticConnection string
 	MariaConnection   string
+	MariaDatabaseName string
 	MariaUser         string
 	MariaPassword     string
 
@@ -58,12 +60,13 @@ func main() {
 	rootCmd.PersistentFlags().StringVarP(&flags.DBDriver, "db-driver", "", "dummydb", "Set database driver that wil be used for connection")
 	rootCmd.PersistentFlags().StringVarP(&flags.ElasticConnection, "elastic-connection", "", "", "Set elastic connection string.")
 	rootCmd.PersistentFlags().StringVarP(&flags.MariaConnection, "maria-connection", "", "", "Set maria database connection string.")
+	rootCmd.PersistentFlags().StringVarP(&flags.MariaDatabaseName, "maria-database-name", "", "monitoring_prod", "Set maria database name.")
 	rootCmd.PersistentFlags().StringVarP(&flags.MariaUser, "maria-user", "", "", "Set Maria database user that wil be used for connection.")
 	rootCmd.PersistentFlags().StringVarP(&flags.MariaPassword, "maria-password", "", "", "Set Maria database password that will be used for connection.")
 
 	// other
 	rootCmd.PersistentFlags().BoolVarP(&flags.Debug, "debug", "v", false, "Enable or disable more verbose log.")
-	rootCmd.PersistentFlags().BoolVarP(&flags.TimeProfiling, "time-profiling", "", false, "Enable or disable time profiling.")
+	rootCmd.PersistentFlags().BoolVarP(&flags.TimeProfiling, "time-profiling", "", false, "Enable or disable time profiling. Logs are printed via debug log.")
 
 	rootCmd.Run = mainExecute
 
@@ -74,8 +77,17 @@ func main() {
 	}
 }
 
+func validateFlags() {
+	if flags.TimeProfiling && !flags.Debug {
+		fmt.Printf("WARNING: time profiling is shown via debug log,  if you dont enabled debug log you wont see time profiling output.\n")
+	}
+}
+
 // main command execute function
 func mainExecute(cmd *cobra.Command, args []string) {
+	validateFlags()
+
+	// setup logger
 	logConfig := exlogger.Config{
 		Debug:        flags.Debug,
 		LogToFile:    flags.LogToFile,
@@ -87,15 +99,19 @@ func mainExecute(cmd *cobra.Command, args []string) {
 	if err != nil {
 		panic(err)
 	}
-	// catch Interrupt (Ctrl^C) or SIGTERM and exit
-	catchOSSignals(logger)
+	defer logger.CloseLogs()
+
 	// setup db client config
 	dbClientConfig := exclient.DBConfig{
 		DBDriver:          flags.DBDriver,
 		ElasticConnection: flags.ElasticConnection,
 		MariaConnection:   flags.MariaConnection,
+		MariaDatabaseName: flags.MariaDatabaseName,
 		MariaUser:         flags.MariaUser,
 		MariaPassword:     flags.MariaPassword,
+
+		Logger:        logger,
+		TimeProfiling: flags.TimeProfiling,
 	}
 	// init DB client
 	dbClient, err := exclient.GetDBClient(dbClientConfig)
@@ -103,6 +119,10 @@ func mainExecute(cmd *cobra.Command, args []string) {
 		logger.LogError(err, "failed to prepare DB Client")
 		panic(err)
 	}
+	defer dbClient.Close()
+	// catch Interrupt (Ctrl^C) or SIGTERM and exit
+	catchOSSignals(logger, dbClient)
+
 	// fetch intervals for monitoring
 	intervalGroups, err := dbClient.SQL_GetIntervals()
 	if err != nil {
@@ -118,16 +138,19 @@ func mainExecute(cmd *cobra.Command, args []string) {
 }
 
 // catch Interrupt (Ctrl^C) or SIGTERM and exit
-func catchOSSignals(l *exlogger.Logger) {
+func catchOSSignals(l *exlogger.Logger, dbClient database.ClientInterface) {
 	// catch signals
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
-		// be sure to close log files
 		s := <-c
+		// be sure to close log files
 		if flags.LogToFile {
 			l.CloseLogs()
 		}
+		// close DB Connection
+		dbClient.Close()
+
 		fmt.Printf("\n>> Caught signal %s, exiting ...\n\n", s.String())
 		os.Exit(1)
 	}()
