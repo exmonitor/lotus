@@ -8,7 +8,7 @@
   revision = "35f8920fcfb988c291b8f15ee355d2fdcb4f3627"
 
 [[projects]]
-  branch = "master"
+  branch = "implement-elastic-search-client"
   name = "github.com/exmonitor/exclient"
   packages = [
     ".",
@@ -19,7 +19,7 @@
     "database/spec/service",
     "database/spec/status"
   ]
-  revision = "2068b8a625d1917d0b466dbc42d5b56fb783ad79"
+  revision = "bacaf26d7f7593323272e3c1a6808987b875e795"
 
 [[projects]]
   branch = "master"
@@ -38,6 +38,27 @@
   packages = ["."]
   revision = "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
   version = "v1.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/mailru/easyjson"
+  packages = [
+    ".",
+    "buffer",
+    "jlexer",
+    "jwriter"
+  ]
+  revision = "60711f1a8329503b04e1c88535f419d0bb440bff"
+
+[[projects]]
+  name = "github.com/olivere/elastic"
+  packages = [
+    ".",
+    "config",
+    "uritemplates"
+  ]
+  revision = "1619150b007041b6dba8aa447f0e2d151cc2b4c5"
+  version = "v6.2.14"
 
 [[projects]]
   name = "github.com/pkg/errors"
@@ -85,6 +106,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3c1eaa159d660fb87a860894f97cec835b76eea62115a38205e7b05b0dd9ccb7"
+  inputs-digest = "9a3cb6d78b652ef90830be7fed28a54ae876c0da83242b7a7d545dc08fa697f5"
   solver-name = "gps-cdcl"
   solver-version = 1

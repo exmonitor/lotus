@@ -23,7 +23,11 @@ import (
 */
 func (c *Client) SQL_GetIntervals() ([]int, error) {
 	t := chronos.New()
-	q := "SELECT id_interval,value FROM `intervalSec`"
+	q := "SELECT " +
+		"id_interval, " +
+		"value " +
+		"FROM " +
+		"intervalSec"
 	// create sql query
 	rows, err := c.sqlClient.Query(q)
 	if err != nil {
