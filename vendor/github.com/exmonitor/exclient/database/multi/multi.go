@@ -17,7 +17,9 @@ import (
 const (
 	sqlDriver = "mysql"
 
-	esStatusIndex = "service_status"
+	esStatusIndex    = "service_status"
+	esStatusDocName  = "service_status"
+	esRangeQueryName = "my_range_query"
 )
 
 func DBDriverName() string {
@@ -87,9 +89,11 @@ func mysqlConnectionString(mariaConnection string, mariaUser string, mariaPasswo
 func (c *Client) Close() {
 	c.sqlClient.Close()
 	c.logger.Log("successfully closed sql connection")
+	// there is no need for closing es client but just for consistency lets write it here
+	c.logger.Log("successfully closed elasticsearch connection")
 }
 
-// inititalise and check sql connection
+// initialise and check sql connection
 func createSqlClient(conf Config) (*sql.DB, error) {
 	// SQL
 	t1 := chronos.New()
@@ -113,6 +117,7 @@ func createSqlClient(conf Config) (*sql.DB, error) {
 	return sqlClient, nil
 }
 
+// initialise and check elasticsearch connection
 func createElasticsearchClient(conf Config, ctx context.Context) (*elastic.Client, error) {
 	t2 := chronos.New()
 	// Create a client
@@ -126,7 +131,7 @@ func createElasticsearchClient(conf Config, ctx context.Context) (*elastic.Clien
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to ping elasticsearch")
 	}
-
+	// ensure status index is created
 	_, err = esClient.CreateIndex(esStatusIndex).Do(ctx)
 	if elastic.IsStatusCode(err, 400) {
 		// all good, index already exists
@@ -141,7 +146,7 @@ func createElasticsearchClient(conf Config, ctx context.Context) (*elastic.Clien
 	t2.Finish()
 	conf.Logger.Log("successfully connected to elasticsearch db %s", conf.ElasticConnection)
 	if conf.TimeProfiling {
-		conf.Logger.LogDebug("TIME_PROFILING: created elasticsearch connection in %sms", t2.StringMilisec())
+		conf.Logger.LogDebug("TIME_PROFILING: created elasticsearch connection in %sms, %ss", t2.StringMilisec(), t2.StringSecLong())
 	}
 
 	return esClient, nil

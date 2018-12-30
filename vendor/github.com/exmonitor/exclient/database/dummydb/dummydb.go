@@ -57,7 +57,6 @@ func (c *Client) ES_GetFailedServices(from time.Time, to time.Time, interval int
 				Message:       "OK",
 				FailThreshold: 5,
 				ReqId:         "xxxx",
-				ResentEvery:   time.Minute * 60,
 			}
 			status2 := &status.ServiceStatus{
 				Id:            2,
@@ -65,7 +64,6 @@ func (c *Client) ES_GetFailedServices(from time.Time, to time.Time, interval int
 				Message:       "check tcp: connection time out",
 				FailThreshold: 5,
 				ReqId:         "xxxxsssss",
-				ResentEvery:   time.Minute * 15,
 			}
 
 			statusArray = append(statusArray, status1)
@@ -77,7 +75,6 @@ func (c *Client) ES_GetFailedServices(from time.Time, to time.Time, interval int
 				Message:       "check tcp: connection refused",
 				FailThreshold: 3,
 				ReqId:         "xxxxzzzz",
-				ResentEvery:   time.Minute * 5,
 			}
 			status4 := &status.ServiceStatus{
 				Id:            4,
@@ -85,7 +82,6 @@ func (c *Client) ES_GetFailedServices(from time.Time, to time.Time, interval int
 				Message:       "check http: returned 503 status",
 				FailThreshold: 5,
 				ReqId:         "xxxxyyyy",
-				ResentEvery:   time.Minute * 5,
 			}
 
 			statusArray = append(statusArray, status3)
@@ -104,7 +100,6 @@ func (c *Client) ES_GetFailedServices(from time.Time, to time.Time, interval int
 				Message:       "check tcp: connection time out",
 				FailThreshold: 5,
 				ReqId:         "xxxxsssss",
-				ResentEvery:   time.Minute * 15,
 			}
 
 			statusArray = append(statusArray, status2)
@@ -115,7 +110,6 @@ func (c *Client) ES_GetFailedServices(from time.Time, to time.Time, interval int
 				Message:       "check tcp: connection refused",
 				FailThreshold: 3,
 				ReqId:         "xxxxzzzz",
-				ResentEvery:   time.Minute * 5,
 			}
 
 			statusArray = append(statusArray, status3)

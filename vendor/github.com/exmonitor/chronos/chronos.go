@@ -27,6 +27,13 @@ func (t *TimeInterval) StringSec() string {
 	return fmt.Sprintf("%.2f", t.End.Sub(t.Start).Seconds())
 }
 
+func (t *TimeInterval) StringSecLong() string {
+        if t.End.IsZero() {
+                return "not_finished"
+        }
+        return fmt.Sprintf("%.6f", t.End.Sub(t.Start).Seconds())
+}
+
 func (t *TimeInterval) StringMilisec() string {
 	if t.End.IsZero() {
 		return "not_finished"

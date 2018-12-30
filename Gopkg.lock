@@ -5,7 +5,7 @@
   branch = "master"
   name = "github.com/exmonitor/chronos"
   packages = ["."]
-  revision = "35f8920fcfb988c291b8f15ee355d2fdcb4f3627"
+  revision = "8dad47e096318a02828f2990802a45781946bcf9"
 
 [[projects]]
   branch = "implement-elastic-search-client"
@@ -19,13 +19,13 @@
     "database/spec/service",
     "database/spec/status"
   ]
-  revision = "bacaf26d7f7593323272e3c1a6808987b875e795"
+  revision = "43cc2d6ae8182edc91e21bcb431486d494841edc"
 
 [[projects]]
   branch = "master"
   name = "github.com/exmonitor/exlogger"
   packages = ["."]
-  revision = "a9f8a7a79c8e24ca9e206034c8bbaba9973445c8"
+  revision = "82c50944ae03c05c4e6cc70056a4fe005624caef"
 
 [[projects]]
   name = "github.com/go-sql-driver/mysql"

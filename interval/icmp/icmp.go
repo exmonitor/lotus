@@ -23,9 +23,10 @@ const (
 )
 
 type CheckConfig struct {
-	Id      int
-	Target  string
-	Timeout time.Duration
+	Id            int
+	FailThreshold int
+	Target        string
+	Timeout       time.Duration
 
 	//db client
 	DBClient database.ClientInterface
@@ -33,10 +34,11 @@ type CheckConfig struct {
 }
 
 type Check struct {
-	id        int
-	requestId string
-	target    string
-	timeout   time.Duration
+	id            int
+	failThreshold int
+	requestId     string
+	target        string
+	timeout       time.Duration
 
 	// db client
 	dbClient database.ClientInterface
@@ -49,7 +51,7 @@ type Check struct {
 
 func NewCheck(conf CheckConfig) (*Check, error) {
 	if conf.Id == 0 {
-		return nil, errors.Wrap(invalidConfigError, "check.Id must not be zero")
+		return nil, errors.Wrap(invalidConfigError, "check.id must not be zero")
 	}
 	if conf.Target == "" {
 		return nil, errors.Wrap(invalidConfigError, "check.Target must not be empty")
@@ -62,9 +64,10 @@ func NewCheck(conf CheckConfig) (*Check, error) {
 	}
 
 	newCheck := &Check{
-		id:      conf.Id,
-		timeout: conf.Timeout,
-		target:  conf.Target,
+		id:            conf.Id,
+		failThreshold: conf.FailThreshold,
+		timeout:       conf.Timeout,
+		target:        conf.Target,
 
 		dbClient: conf.DBClient,
 		log:      conf.Logger,
@@ -86,7 +89,13 @@ func (c *Check) RunCheck() {
 }
 
 func (c *Check) doCheck() *status.Status {
-	s, err := status.NewStatus(c.dbClient)
+	statusConfig := status.Config{
+		Id:            c.id,
+		ReqId:         c.requestId,
+		FailThreshold: c.failThreshold,
+		DBClient:      c.dbClient,
+	}
+	s, err := status.New(statusConfig)
 	if err != nil {
 		c.LogRunError(err, fmt.Sprintf("failed to init new status for ICMP service ID %d", c.id))
 	}
@@ -96,7 +105,7 @@ func (c *Check) doCheck() *status.Status {
 	{
 		if err != nil {
 			c.LogRunError(err, msgInternalFailedToInitialisePing)
-			s.Set(false, err, msgInternalFailedToInitialisePing, "")
+			s.Set(false, err, msgInternalFailedToInitialisePing)
 			return s
 		}
 
@@ -105,29 +114,21 @@ func (c *Check) doCheck() *status.Status {
 		pinger.SetPrivileged(true)
 		pinger.OnRecv = func(pkt *ping.Packet) {
 			// we got positive response
-			s.Set(true, nil, MsgSuccess, "")
+			s.Set(true, nil, MsgSuccess)
 		}
 	}
 
 	pinger.Run()
 	s.Duration = time.Since(tStart)
 	if s.Duration >= c.timeout {
-		s.Set(false, nil, MsgTimeout, "")
+		s.Set(false, nil, MsgTimeout)
 	}
 
 	return s
 }
 
 func (c *Check) LogResult(s *status.Status) {
-	logMessage := s.Message
-	if s.ExtraInfo != "" {
-		logMessage += ", ExtraInfo: " + s.ExtraInfo
-	}
-	if s.Error != nil {
-		logMessage += ", Error: " + s.Error.Error()
-	}
-
-	c.log.Log("check-ICMP|id %d|reqID %s|target %s|latency %sms|result '%t'|msg: %s", c.id, c.requestId, c.target, key.MsFromDuration(s.Duration), s.Result, logMessage)
+	c.log.Log("check-ICMP|id %d|reqID %s|target %s|latency %sms|result '%t'|msg: %s", c.id, c.requestId, c.target, key.MsFromDuration(s.Duration), s.Result, s.Message)
 }
 
 func (c *Check) LogRunError(err error, message string) {

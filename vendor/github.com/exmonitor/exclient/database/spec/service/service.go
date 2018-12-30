@@ -13,11 +13,11 @@ type Service struct {
 
 func (s *Service) ServiceTypeString() string {
 	switch s.Type {
-	case 0:
-		return "http"
 	case 1:
-		return "tcp"
+		return "http"
 	case 2:
+		return "tcp"
+	case 3:
 		return "icmp"
 	default:
 		return "unknown"
