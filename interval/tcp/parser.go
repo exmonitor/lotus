@@ -39,6 +39,7 @@ func ParseCheck(service *service.Service, dbClient database.ClientInterface, log
 	checkConfig := CheckConfig{
 		Id:            service.ID,
 		FailThreshold: service.FailThreshold,
+		Interval:service.Interval,
 		Target:        rawCheck.Target,
 		Port:          rawCheck.Port,
 		Timeout:       time.Second * time.Duration(rawCheck.Timeout),

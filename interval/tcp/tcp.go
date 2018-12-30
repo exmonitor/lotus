@@ -16,6 +16,7 @@ import (
 type CheckConfig struct {
 	Id            int
 	FailThreshold int
+	Interval      int
 	Target        string
 	Port          int
 	Timeout       time.Duration
@@ -28,6 +29,7 @@ type CheckConfig struct {
 type Check struct {
 	id            int
 	failThreshold int
+	interval      int
 	requestId     string
 	target        string
 	port          int
@@ -45,6 +47,12 @@ type Check struct {
 func NewCheck(conf CheckConfig) (*Check, error) {
 	if conf.Id == 0 {
 		return nil, errors.Wrap(invalidConfigError, "conf.id must not be zero")
+	}
+	if conf.FailThreshold == 0 {
+		return nil, errors.Wrap(invalidConfigError, "conf.FailThreshold must not be zero")
+	}
+	if conf.Interval == 0 {
+		return nil, errors.Wrap(invalidConfigError, "conf.Interval must not be zero")
 	}
 	if conf.Target == "" {
 		return nil, errors.Wrap(invalidConfigError, "conf.Target must not be empty")
@@ -65,6 +73,7 @@ func NewCheck(conf CheckConfig) (*Check, error) {
 	newCheck := &Check{
 		id:            conf.Id,
 		failThreshold: conf.FailThreshold,
+		interval:      conf.Interval,
 		timeout:       conf.Timeout,
 		port:          conf.Port,
 		target:        conf.Target,
@@ -92,6 +101,7 @@ func (c *Check) doCheck() *status.Status {
 	statusConfig := status.Config{
 		Id:            c.id,
 		ReqId:         c.requestId,
+		Interval:      c.interval,
 		FailThreshold: c.failThreshold,
 		DBClient:      c.dbClient,
 	}
@@ -103,7 +113,7 @@ func (c *Check) doCheck() *status.Status {
 
 	conn, err := net.DialTimeout("tcp", tcpTargetAddress(c.target, c.port), c.timeout)
 	if err != nil {
-		s.Set(false, err, "failed to open tcp connection",)
+		s.Set(false, err, "failed to open tcp connection")
 		s.Duration = time.Since(tStart)
 		return s
 	} else {

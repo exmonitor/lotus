@@ -17,24 +17,23 @@ import (
 func (c *Client) ES_GetFailedServices(from time.Time, to time.Time, interval int) ([]*status.ServiceStatus, error) {
 	var serviceStatusArray []*status.ServiceStatus
 	t := chronos.New()
+	c.logger.LogDebug("fetching failedServices from %s to %s for interval %d", from.String(), to.String(), interval)
 
 	// datetime range query
-	timeRangeQuery := elastic.NewRangeQuery(esRangeQueryName).Gte(from).Lt(to)
+	timeRangeFilter := elastic.NewRangeQuery("@timestamp").Gte(from).Lt(to)
 	// failedServices term query
-	faildServiceQuery := elastic.NewTermQuery("result", false)
+	failedServiceQuery := elastic.NewTermQuery("result", false)
+	// match interval
+	intervalQuery :=  elastic.NewTermQuery("interval", interval)
 
 	// build whole search query
-	searchQuery := elastic.NewBoolQuery().Must(faildServiceQuery).Filter(timeRangeQuery)
+	searchQuery := elastic.NewBoolQuery().Must(failedServiceQuery, intervalQuery).Filter(timeRangeFilter)
 
 	// execute search querry
 	// TODO use backoff retry
 	searchResult, err := c.esClient.Search().Index(esStatusIndex).Query(searchQuery).Do(c.ctx)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get ES_GetFailedServices for int %d", interval)
-	}
-
-	if c.timeProfiling {
-		c.logger.LogDebug("TIME_PROFILING: executed search query in ES_SaveServiceStatus in %sms", searchResult.TookInMillis)
 	}
 
 	// parse results into struct
@@ -47,11 +46,9 @@ func (c *Client) ES_GetFailedServices(from time.Time, to time.Time, interval int
 			c.logger.LogError(nil, "failed to parse status.ServiceStatus num %d in ES_SaveServiceStatus", i)
 		}
 	}
-	c.logger.LogDebug("fetched %d FailedServices from db", len(serviceStatusArray))
-
 	t.Finish()
 	if c.timeProfiling {
-		c.logger.LogDebug("TIME_PROFILING: executed ES_SaveServiceStatus in %sms", t.StringMilisec())
+		c.logger.LogDebug("TIME_PROFILING: executed ES_GetFailedServices in %sms", t.StringMilisec())
 	}
 
 	return serviceStatusArray, nil

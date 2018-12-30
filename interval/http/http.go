@@ -33,10 +33,11 @@ var defaultAllowedStatusCodes = []int{200, 201, 202, 203, 204, 205}
 // config is used for initializing the check
 type CheckConfig struct {
 	// general options
-	Id      int
-	Port    int
-	Target  string // IP or URL
-	Timeout time.Duration
+	Id       int
+	Interval int
+	Port     int
+	Target   string // IP or URL
+	Timeout  time.Duration
 
 	// protocol specific options
 	Proto        string // http or https
@@ -70,7 +71,8 @@ type CheckConfig struct {
 
 type Check struct {
 	// general options
-	id        int    // id of  the check saved in db, always same for the specific check
+	id        int // id of  the check saved in db, always same for the specific check
+	interval  int
 	requestId string // identification of this current request, always unique across all data in eternity
 	port      int
 	target    string // IP or URL
@@ -119,6 +121,12 @@ func New(conf CheckConfig) (*Check, error) {
 	if conf.Id == 0 {
 		return nil, errors.Wrap(invalidConfigError, "check.id must not be zero")
 	}
+	if conf.Interval == 0 {
+		return nil, errors.Wrap(invalidConfigError, "check.Interval must not be zero")
+	}
+	if conf.FailThreshold == 0 {
+		return nil, errors.Wrap(invalidConfigError, "check.FailThreshold must not be zero")
+	}
 	if conf.Port == 0 {
 		return nil, errors.Wrap(invalidConfigError, "check.Port must not be zero")
 	}
@@ -152,10 +160,11 @@ func New(conf CheckConfig) (*Check, error) {
 
 	// init values
 	newCheck := &Check{
-		id:      conf.Id,
-		port:    conf.Port,
-		target:  conf.Target,
-		timeout: conf.Timeout,
+		id:       conf.Id,
+		interval: conf.Interval,
+		port:     conf.Port,
+		target:   conf.Target,
+		timeout:  conf.Timeout,
 
 		proto:        conf.Proto,
 		method:       conf.Method,
@@ -199,6 +208,7 @@ func (c *Check) doCheck() *status.Status {
 	statusConfig := status.Config{
 		Id:            c.id,
 		ReqId:         c.requestId,
+		Interval:      c.interval,
 		FailThreshold: c.failThreshold,
 		DBClient:      c.dbClient,
 	}
