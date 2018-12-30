@@ -23,7 +23,11 @@ import (
 */
 func (c *Client) SQL_GetIntervals() ([]int, error) {
 	t := chronos.New()
-	q := "SELECT id_interval,value FROM `intervalSec`"
+	q := "SELECT " +
+		"id_interval, " +
+		"value " +
+		"FROM " +
+		"intervalSec"
 	// create sql query
 	rows, err := c.sqlClient.Query(q)
 	if err != nil {
@@ -108,7 +112,7 @@ func (c *Client) SQL_GetUsersNotificationSettings(serviceID int) ([]*notificatio
 
 	t.Finish()
 	if c.timeProfiling {
-		c.logger.LogDebug("TIME_PROFILING: executed SQL_GetUsersNotificationSettings:%d in %sms", serviceID, t.StringMilisec())
+		c.logger.LogDebug("TIME_PROFILING: executed SQL_GetUsersNotificationSettings:ID:%d in %sms", serviceID, t.StringMilisec())
 	}
 	return notifications, nil
 }
@@ -167,7 +171,7 @@ func (c *Client) SQL_GetServices(interval int) ([]*service.Service, error) {
 
 	t.Finish()
 	if c.timeProfiling {
-		c.logger.LogDebug("TIME_PROFILING: executed SQL_GetServices:%ds in %sms", interval, t.StringMilisec())
+		c.logger.LogDebug("TIME_PROFILING: executed SQL_GetServices:%d in %sms", interval, t.StringMilisec())
 	}
 	return services, nil
 }
@@ -222,7 +226,7 @@ func (c *Client) SQL_GetServiceDetails(serviceID int) (*service.Service, error) 
 
 	t.Finish()
 	if c.timeProfiling {
-		c.logger.LogDebug("TIME_PROFILING: executed SQL_GetServiceDetails:%d in %sms", serviceID, t.StringMilisec())
+		c.logger.LogDebug("TIME_PROFILING: executed SQL_GetServiceDetails:ID:%d in %sms", serviceID, t.StringMilisec())
 	}
 
 	return s, nil

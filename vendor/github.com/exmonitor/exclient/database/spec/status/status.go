@@ -3,13 +3,14 @@ package status
 import "time"
 
 type ServiceStatus struct {
-	Id            int
-	FailThreshold int
-	ResentEvery   time.Duration
-	Duration      time.Duration
-	Message       string
-	Result        bool
-	ReqId         string
+	Id            int           `json:"id"`
+	FailThreshold int           `json:"failThreshold"`
+	Duration      time.Duration `json:"duration"`
+	Message       string        `json:"message"`
+	Result        bool          `json:"result"`
+	ReqId         string        `json:"reqId"`
+	// used for saving timestamp when it was inserted into ES DB
+	InsertTimestamp time.Time `json:"@timestamp"`
 }
 
 // find status in the status array

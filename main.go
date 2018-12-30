@@ -58,7 +58,7 @@ func main() {
 
 	// database
 	rootCmd.PersistentFlags().StringVarP(&flags.DBDriver, "db-driver", "", "dummydb", "Set database driver that wil be used for connection")
-	rootCmd.PersistentFlags().StringVarP(&flags.ElasticConnection, "elastic-connection", "", "", "Set elastic connection string.")
+	rootCmd.PersistentFlags().StringVarP(&flags.ElasticConnection, "elastic-connection", "", "http://127.0.0.1:9200", "Set elastic connection string.")
 	rootCmd.PersistentFlags().StringVarP(&flags.MariaConnection, "maria-connection", "", "", "Set maria database connection string.")
 	rootCmd.PersistentFlags().StringVarP(&flags.MariaDatabaseName, "maria-database-name", "", "monitoring_prod", "Set maria database name.")
 	rootCmd.PersistentFlags().StringVarP(&flags.MariaUser, "maria-user", "", "", "Set Maria database user that wil be used for connection.")
@@ -100,6 +100,7 @@ func mainExecute(cmd *cobra.Command, args []string) {
 		panic(err)
 	}
 	defer logger.CloseLogs()
+	logger.Log("started logger")
 
 	// setup db client config
 	dbClientConfig := exclient.DBConfig{

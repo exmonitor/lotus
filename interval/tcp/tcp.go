@@ -14,10 +14,11 @@ import (
 )
 
 type CheckConfig struct {
-	Id      int
-	Target  string
-	Port    int
-	Timeout time.Duration
+	Id            int
+	FailThreshold int
+	Target        string
+	Port          int
+	Timeout       time.Duration
 
 	//db client
 	DBClient database.ClientInterface
@@ -25,11 +26,12 @@ type CheckConfig struct {
 }
 
 type Check struct {
-	id        int
-	requestId string
-	target    string
-	port      int
-	timeout   time.Duration
+	id            int
+	failThreshold int
+	requestId     string
+	target        string
+	port          int
+	timeout       time.Duration
 
 	// db client
 	dbClient database.ClientInterface
@@ -42,7 +44,7 @@ type Check struct {
 
 func NewCheck(conf CheckConfig) (*Check, error) {
 	if conf.Id == 0 {
-		return nil, errors.Wrap(invalidConfigError, "conf.Id must not be zero")
+		return nil, errors.Wrap(invalidConfigError, "conf.id must not be zero")
 	}
 	if conf.Target == "" {
 		return nil, errors.Wrap(invalidConfigError, "conf.Target must not be empty")
@@ -61,10 +63,11 @@ func NewCheck(conf CheckConfig) (*Check, error) {
 	}
 
 	newCheck := &Check{
-		id:      conf.Id,
-		timeout: conf.Timeout,
-		port:    conf.Port,
-		target:  conf.Target,
+		id:            conf.Id,
+		failThreshold: conf.FailThreshold,
+		timeout:       conf.Timeout,
+		port:          conf.Port,
+		target:        conf.Target,
 
 		dbClient: conf.DBClient,
 		log:      conf.Logger,
@@ -86,7 +89,13 @@ func (c *Check) RunCheck() {
 }
 
 func (c *Check) doCheck() *status.Status {
-	s, err := status.NewStatus(c.dbClient)
+	statusConfig := status.Config{
+		Id:            c.id,
+		ReqId:         c.requestId,
+		FailThreshold: c.failThreshold,
+		DBClient:      c.dbClient,
+	}
+	s, err := status.New(statusConfig)
 	if err != nil {
 		c.LogRunError(err, fmt.Sprintf("failed to init new status for ICMP service ID %d", c.id))
 	}
@@ -94,7 +103,7 @@ func (c *Check) doCheck() *status.Status {
 
 	conn, err := net.DialTimeout("tcp", tcpTargetAddress(c.target, c.port), c.timeout)
 	if err != nil {
-		s.Set(false, err, "failed to open tcp connection", "")
+		s.Set(false, err, "failed to open tcp connection",)
 		s.Duration = time.Since(tStart)
 		return s
 	} else {
@@ -102,7 +111,7 @@ func (c *Check) doCheck() *status.Status {
 		//if _, err := fmt.Fprintf(conn, testMsg); err != nil {
 		//	t.Fatal(err)
 		//}
-		s.Set(true, nil, "success", "")
+		s.Set(true, nil, "success")
 	}
 
 	s.Duration = time.Since(tStart)
@@ -114,14 +123,7 @@ func tcpTargetAddress(target string, port int) string {
 }
 
 func (c *Check) LogResult(s *status.Status) {
-	logMessage := s.Message
-	if s.ExtraInfo != "" {
-		logMessage += ", ExtraInfo: " + s.ExtraInfo
-	}
-	if s.Error != nil {
-		logMessage += ", Error: " + s.Error.Error()
-	}
-	c.log.Log("check-TCP|id %d|reqID %s|target %s|port %d|latency %sms|result '%t'|msg: %s", c.id, c.requestId, c.target, c.port, key.MsFromDuration(s.Duration), s.Result, logMessage)
+	c.log.Log("check-TCP|id %d|reqID %s|target %s|port %d|latency %sms|result '%t'|msg: %s", c.id, c.requestId, c.target, c.port, key.MsFromDuration(s.Duration), s.Result, s.Message)
 }
 
 func (c *Check) LogRunError(err error, message string) {

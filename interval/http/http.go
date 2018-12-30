@@ -60,9 +60,12 @@ type CheckConfig struct {
 	TlsCheckCertificates       bool
 	TlsCertExpirationThreshold time.Duration
 
-	//db client
+	// db client
 	DBClient database.ClientInterface
 	Logger   *exlogger.Logger
+
+	// extra info
+	FailThreshold int
 }
 
 type Check struct {
@@ -97,9 +100,12 @@ type Check struct {
 
 	// db client
 	dbClient database.ClientInterface
+
+	// extra
+	failThreshold int
+
 	// logger
 	log *exlogger.Logger
-
 	// internals
 	spec.CheckInterface
 }
@@ -111,7 +117,7 @@ type HTTPKeyValue struct {
 
 func New(conf CheckConfig) (*Check, error) {
 	if conf.Id == 0 {
-		return nil, errors.Wrap(invalidConfigError, "check.Id must not be zero")
+		return nil, errors.Wrap(invalidConfigError, "check.id must not be zero")
 	}
 	if conf.Port == 0 {
 		return nil, errors.Wrap(invalidConfigError, "check.Port must not be zero")
@@ -168,6 +174,8 @@ func New(conf CheckConfig) (*Check, error) {
 		tlsCheckCertificates:       conf.TlsCheckCertificates,
 		tlsCertExpirationThreshold: conf.TlsCertExpirationThreshold,
 
+		failThreshold: conf.FailThreshold,
+
 		log:      conf.Logger,
 		dbClient: conf.DBClient,
 	}
@@ -188,9 +196,15 @@ func (c *Check) RunCheck() {
 
 // run monitoring check with all options
 func (c *Check) doCheck() *status.Status {
-	s, err := status.NewStatus(c.dbClient)
+	statusConfig := status.Config{
+		Id:            c.id,
+		ReqId:         c.requestId,
+		FailThreshold: c.failThreshold,
+		DBClient:      c.dbClient,
+	}
+	s, err := status.New(statusConfig)
 	if err != nil {
-		c.LogRunError(err, fmt.Sprintf("failed to init new status for ICMP service ID %d", c.id))
+		c.LogRunError(err, fmt.Sprintf("failed to init new status for HTTP service ID %d", c.id))
 	}
 	tStart := time.Now()
 
@@ -216,7 +230,7 @@ func (c *Check) doCheck() *status.Status {
 	req, err := http.NewRequest(c.method, c.url(), c.getPostData())
 	if err != nil {
 		c.LogRunError(err, msgInternalFailedHttpClient)
-		s.Set(false, err, msgInternalFailedHttpClient, "")
+		s.Set(false, err, msgInternalFailedHttpClient)
 		return s
 	}
 	// set basic auth if its enabled
@@ -230,7 +244,7 @@ func (c *Check) doCheck() *status.Status {
 	// execute http request
 	resp, err := client.Do(req)
 	if err != nil {
-		s.Set(false, err, msgFailedToExecute, "")
+		s.Set(false, err, msgFailedToExecute)
 		return s
 	} else {
 		httpCodeOK := false
@@ -242,8 +256,8 @@ func (c *Check) doCheck() *status.Status {
 			}
 		}
 		if !httpCodeOK {
-			msg := fmt.Sprintf("HTTP s code: %d is in within allowed codes %s", resp.StatusCode, c.allowedHttpStatusCodes)
-			s.Set(false, nil, msgFailedBadStatusCode, msg)
+			msg := fmt.Sprintf("HTTP code: %d is in not within allowed codes %s", resp.StatusCode, c.allowedHttpStatusCodes)
+			s.Set(false, nil, fmt.Sprintf("%s, %s", msgFailedBadStatusCode, msg))
 			return s
 		}
 
@@ -253,13 +267,12 @@ func (c *Check) doCheck() *status.Status {
 			respData, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
 				c.LogRunError(err, msgInternalFailedToReadResponse)
-				s.Set(false, err, msgInternalFailedToReadResponse, "")
+				s.Set(false, err, msgInternalFailedToReadResponse)
 				return s
 			}
 			// check if response contains requested content in http body
 			if !strings.Contains(string(respData), c.contentCheckString) {
-				msg := "the page successfully retrieved, but the required content was not found"
-				s.Set(false, nil, msgFailedContentNotFound, msg)
+				s.Set(false, nil, msgFailedContentNotFound)
 				return s
 			}
 		}
@@ -268,13 +281,13 @@ func (c *Check) doCheck() *status.Status {
 	if c.tlsCheckCertificates {
 		certsOK, message := c.checkTLS(resp.TLS)
 		if !certsOK {
-			s.Set(false, nil, msgFailedCertExpired, message)
+			s.Set(false, nil, message)
 			return s
 		}
 	}
 
 	s.Duration = time.Since(tStart)
-	s.Set(true, nil, "success", "")
+	s.Set(true, nil, "success")
 
 	return s
 }
@@ -331,15 +344,7 @@ func (c *Check) checkTLS(conn *tls.ConnectionState) (bool, string) {
 }
 
 func (c *Check) LogResult(s *status.Status) {
-	logMessage := s.Message
-	if s.ExtraInfo != "" {
-		logMessage += ", ExtraInfo: " + s.ExtraInfo
-	}
-	if s.Error != nil {
-		logMessage += ", Error: " + s.Error.Error()
-	}
-
-	c.log.Log("check-HTTP|id %d|reqID %s|target %s|proto %s|port %d|latency %sms|result '%t'|msg: %s", c.id, c.requestId, c.target, c.proto, c.port, key.MsFromDuration(s.Duration), s.Result, logMessage)
+	c.log.Log("check-HTTP|id %d|reqID %s|target %s|proto %s|port %d|latency %sms|result '%t'|msg: %s", c.id, c.requestId, c.target, c.proto, c.port, key.MsFromDuration(s.Duration), s.Result, s.Message)
 }
 
 func (c *Check) LogRunError(err error, message string) {

@@ -70,5 +70,5 @@ func (l *Logger) LogDebug(msg string, vals ...interface{}) {
 }
 
 func (l *Logger) LogError(err error, msg string, vals ...interface{}) {
-	l.loggerError.Printf(fmt.Sprintf("%s|%s", msg, err), vals...)
+	l.loggerError.Printf(fmt.Sprintf("ERROR | %s|%s", msg, err), vals...)
 }

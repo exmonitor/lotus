@@ -35,11 +35,12 @@ func ParseCheck(service *service.Service, dbClient database.ClientInterface, log
 	}
 
 	checkConfig := CheckConfig{
-		Id:       service.ID,
-		Target:   rawCheck.Target,
-		Timeout:  time.Second * time.Duration(rawCheck.Timeout),
-		Logger:   logger,
-		DBClient: dbClient,
+		Id:            service.ID,
+		FailThreshold: service.FailThreshold,
+		Target:        rawCheck.Target,
+		Timeout:       time.Second * time.Duration(rawCheck.Timeout),
+		Logger:        logger,
+		DBClient:      dbClient,
 	}
 
 	return NewCheck(checkConfig)

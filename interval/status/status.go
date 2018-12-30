@@ -7,49 +7,77 @@ import (
 	"time"
 )
 
-type Status struct {
-	Id        int
-	ReqId     string
-	Result    bool
-	Error     error
-	Duration  time.Duration
-	Message   string
-	ExtraInfo string
+type Config struct {
+	Id    int
+	ReqId string
 
+	// extra
+	FailThreshold int
+	// db client
 	DBClient database.ClientInterface
 }
 
-func NewStatus(dbClient database.ClientInterface) (*Status, error) {
-	if dbClient == nil {
-		return nil, errors.Wrap(invalidConfigError, "dbClient must not be nil")
+type Status struct {
+	id       int
+	reqId    string
+	Result   bool
+	Duration time.Duration
+	Message  string
+
+	// extra
+	failThreshold int
+	// db client
+	dbClient database.ClientInterface
+}
+
+func New(conf Config) (*Status, error) {
+	if conf.Id == 0 {
+		return nil, errors.Wrap(invalidConfigError, "conf.Id must not be zero")
+	}
+	if conf.DBClient == nil {
+		return nil, errors.Wrap(invalidConfigError, "conf.DBClient must not be nil")
+	}
+	if conf.FailThreshold == 0 {
+		return nil, errors.Wrap(invalidConfigError, "conf.FailThreshold must not be zero")
+	}
+	if conf.ReqId == "" {
+		return nil, errors.Wrap(invalidConfigError, "conf.ReqId must not be empty")
 	}
 
 	newStatus := &Status{
-		Result:   false,
-		Error:    nil,
-		DBClient: dbClient,
+		id:     conf.Id,
+		reqId:  conf.ReqId,
+		Result: false,
+
+		failThreshold: conf.FailThreshold,
+		dbClient:      conf.DBClient,
 	}
 
 	return newStatus, nil
 }
-
-func (s *Status) Set(result bool, err error, msg string, extraMsg string) {
+// set the result info
+func (s *Status) Set(result bool, err error, msg string) {
 	s.Result = result
-	s.Error = err
 	if msg != "" {
 		s.Message += msg
 	}
-	if extraMsg != "" {
-		s.ExtraInfo += extraMsg
+	if err != nil {
+		s.Message += " | error:" + err.Error()
 	}
 }
 
 func (s *Status) SaveToDB() {
+	// init  db structure for saving data about status
 	serviceStatus := &status.ServiceStatus{
-		Id:     s.Id,
-		Result: s.Result,
-		// TODO
+		Id:            s.id,
+		FailThreshold: s.failThreshold,
+		Result:        s.Result,
+		Duration:      s.Duration,
+		ReqId:         s.reqId,
+		Message:       s.Message,
+		// timestamp for the record
+		InsertTimestamp: time.Now(),
 	}
-
-	s.DBClient.ES_SaveServiceStatus(serviceStatus)
+	// save to db via Elasticsearch client
+	s.dbClient.ES_SaveServiceStatus(serviceStatus)
 }
