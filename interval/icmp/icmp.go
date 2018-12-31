@@ -25,6 +25,7 @@ const (
 type CheckConfig struct {
 	Id            int
 	FailThreshold int
+	Interval      int
 	Target        string
 	Timeout       time.Duration
 
@@ -36,6 +37,7 @@ type CheckConfig struct {
 type Check struct {
 	id            int
 	failThreshold int
+	interval      int
 	requestId     string
 	target        string
 	timeout       time.Duration
@@ -53,6 +55,12 @@ func NewCheck(conf CheckConfig) (*Check, error) {
 	if conf.Id == 0 {
 		return nil, errors.Wrap(invalidConfigError, "check.id must not be zero")
 	}
+	if conf.Interval == 0 {
+		return nil, errors.Wrap(invalidConfigError, "check.Interval must not be zero")
+	}
+	if conf.FailThreshold == 0 {
+		return nil, errors.Wrap(invalidConfigError, "check.FailThreshold must not be zero")
+	}
 	if conf.Target == "" {
 		return nil, errors.Wrap(invalidConfigError, "check.Target must not be empty")
 	}
@@ -66,6 +74,7 @@ func NewCheck(conf CheckConfig) (*Check, error) {
 	newCheck := &Check{
 		id:            conf.Id,
 		failThreshold: conf.FailThreshold,
+		interval:      conf.Interval,
 		timeout:       conf.Timeout,
 		target:        conf.Target,
 
@@ -92,6 +101,7 @@ func (c *Check) doCheck() *status.Status {
 	statusConfig := status.Config{
 		Id:            c.id,
 		ReqId:         c.requestId,
+		Interval:      c.interval,
 		FailThreshold: c.failThreshold,
 		DBClient:      c.dbClient,
 	}

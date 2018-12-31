@@ -8,8 +8,9 @@ import (
 )
 
 type Config struct {
-	Id    int
-	ReqId string
+	Id       int
+	ReqId    string
+	Interval int
 
 	// extra
 	FailThreshold int
@@ -20,6 +21,7 @@ type Config struct {
 type Status struct {
 	id       int
 	reqId    string
+	interval int
 	Result   bool
 	Duration time.Duration
 	Message  string
@@ -45,9 +47,10 @@ func New(conf Config) (*Status, error) {
 	}
 
 	newStatus := &Status{
-		id:     conf.Id,
-		reqId:  conf.ReqId,
-		Result: false,
+		id:       conf.Id,
+		reqId:    conf.ReqId,
+		interval: conf.Interval,
+		Result:   false,
 
 		failThreshold: conf.FailThreshold,
 		dbClient:      conf.DBClient,
@@ -55,6 +58,7 @@ func New(conf Config) (*Status, error) {
 
 	return newStatus, nil
 }
+
 // set the result info
 func (s *Status) Set(result bool, err error, msg string) {
 	s.Result = result
@@ -71,6 +75,7 @@ func (s *Status) SaveToDB() {
 	serviceStatus := &status.ServiceStatus{
 		Id:            s.id,
 		FailThreshold: s.failThreshold,
+		Interval:      s.interval,
 		Result:        s.Result,
 		Duration:      s.Duration,
 		ReqId:         s.reqId,
