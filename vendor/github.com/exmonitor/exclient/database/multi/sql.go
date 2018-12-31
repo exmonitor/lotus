@@ -73,7 +73,7 @@ func (c *Client) SQL_GetUsersNotificationSettings(serviceID int) ([]*notificatio
 		"notification.id_notification, " +
 		"notification.type, " +
 		"notification.target, " +
-		"notification.fk_settings " +
+		"notify_settings.intervalMin " +
 		"FROM " +
 		"services " +
 		"JOIN hosts ON fk_service_hosts=id_hosts " +
@@ -96,9 +96,9 @@ func (c *Client) SQL_GetUsersNotificationSettings(serviceID int) ([]*notificatio
 	// read result
 	for rows.Next() {
 		var target, notificationType string
-		var id, resentSettings int
+		var id, resentAfterMin int
 		// scan rows
-		err := rows.Scan(&id, &target, &notificationType, &resentSettings)
+		err := rows.Scan(&id, &notificationType, &target, &resentAfterMin)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to scan values in SQL_GetUsersNotificationSettings")
 		}
@@ -107,7 +107,7 @@ func (c *Client) SQL_GetUsersNotificationSettings(serviceID int) ([]*notificatio
 			ID:             id,
 			Target:         target,
 			Type:           notificationType,
-			ResentSettings: resentSettings,
+			ResentAfterMin: resentAfterMin,
 		}
 		notifications = append(notifications, n)
 	}
@@ -207,7 +207,6 @@ func (c *Client) SQL_GetServiceDetails(serviceID int) (*service.Service, error) 
 		return nil, errors.Wrap(err, "failed to execute SQL_GetServiceDetails")
 	}
 
-
 	var s *service.Service
 	if rows.Next() {
 		// read result
@@ -229,7 +228,7 @@ func (c *Client) SQL_GetServiceDetails(serviceID int) (*service.Service, error) 
 			Interval:      intervalSec,
 		}
 	} else {
-		return nil, errors.Wrapf(executionFailedError, "failed to fetch service ID %d", serviceID)
+		return nil, errors.Wrapf(executionFailedError, "failed to fetch service ID %d, no results found in db", serviceID)
 	}
 
 	t.Finish()

@@ -23,9 +23,11 @@
 #   non-go = false
 #   go-tests = true
 #   unused-packages = true
+
+
 [[constraint]]
   name = "github.com/exmonitor/exclient"
-  branch = "fix-es-search-query"
+  branch = "master"
 
 
 [prune]

@@ -76,7 +76,6 @@ func (ig *IntervalGroup) Boot() {
 		// wait until we reached another interval tick
 		select {
 		case <-tickChan:
-			ig.logger.Log("received tick, interval %ds", ig.intervalSec)
 		}
 		// fetch service data
 		if ig.loopCounter%ig.fetchLoopModulator == 0 {
@@ -90,7 +89,7 @@ func (ig *IntervalGroup) Boot() {
 
 		// parse metada and than run each service in separate goroutine
 		for _, s := range services {
-			// TODO caching of already loaded services, we can introduce md5 of metadata to check if there sia ny change
+			// TODO caching of already loaded services, we can introduce md5 of metadata to check if there is any change
 			// TODO parsing each time is quite time expensive
 
 			var check spec.CheckInterface
