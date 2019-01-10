@@ -5,7 +5,7 @@
   branch = "master"
   name = "github.com/exmonitor/chronos"
   packages = ["."]
-  revision = "8dad47e096318a02828f2990802a45781946bcf9"
+  revision = "61f1c9cece4f2e6a7aa1d38f29e88046fda432a2"
 
 [[projects]]
   branch = "master"
@@ -20,7 +20,7 @@
     "database/spec/service",
     "database/spec/status"
   ]
-  revision = "0817cab2bbfa371dd010b06b5be6ad4087939e57"
+  revision = "962d850fb1299d8e01e4bec70f067ab05367b957"
 
 [[projects]]
   branch = "master"
@@ -58,14 +58,14 @@
     "config",
     "uritemplates"
   ]
-  revision = "1619150b007041b6dba8aa447f0e2d151cc2b4c5"
-  version = "v6.2.14"
+  revision = "f5738570b28a4b5fab39442e3a5b5ffc599a562c"
+  version = "v6.2.15"
 
 [[projects]]
   name = "github.com/pkg/errors"
   packages = ["."]
-  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
-  version = "v0.8.0"
+  revision = "ba968bfe8b2f7e042a574c888954fccecfa385b4"
+  version = "v0.8.1"
 
 [[projects]]
   branch = "master"
@@ -96,7 +96,7 @@
     "ipv4",
     "ipv6"
   ]
-  revision = "927f97764cc334a6575f4b7a1584a147864d5723"
+  revision = "be1c187aa6c66b9daa1d9461c228d17e9dd2cab7"
 
 [[projects]]
   name = "google.golang.org/appengine"

@@ -29,7 +29,6 @@
   name = "github.com/exmonitor/exclient"
   branch = "master"
 
-
 [prune]
   go-tests = true
   unused-packages = true

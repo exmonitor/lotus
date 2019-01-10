@@ -8,12 +8,8 @@ import (
 	"github.com/exmonitor/exclient/database/spec/service"
 
 	"github.com/exmonitor/exlogger"
-	"github.com/exmonitor/watcher/interval/http"
-	"github.com/exmonitor/watcher/interval/icmp"
-	"github.com/exmonitor/watcher/interval/spec"
-	"github.com/exmonitor/watcher/interval/tcp"
-	"github.com/exmonitor/watcher/key"
 	"github.com/pkg/errors"
+	"github.com/exmonitor/watcher/interval/parse"
 )
 
 type IntervalGroupConfig struct {
@@ -32,7 +28,7 @@ type IntervalGroup struct {
 	fetchLoopModulator int //  how often we should fetch checks from DB in terms of loops (ie: fetch data every 10 loops)
 
 	// db client interface
-	dBClient database.ClientInterface
+	dbClient database.ClientInterface
 }
 
 func NewIntervalGroup(conf IntervalGroupConfig) (*IntervalGroup, error) {
@@ -56,7 +52,7 @@ func NewIntervalGroup(conf IntervalGroupConfig) (*IntervalGroup, error) {
 		intervalSec:        conf.IntervalSec,
 		logger:             conf.Logger,
 		fetchLoopModulator: conf.FetchLoopModulator,
-		dBClient:           conf.DBClient,
+		dbClient:           conf.DBClient,
 	}
 
 	return newIG, nil
@@ -79,7 +75,7 @@ func (ig *IntervalGroup) Boot() {
 		}
 		// fetch service data
 		if ig.loopCounter%ig.fetchLoopModulator == 0 {
-			services, err = ig.dBClient.SQL_GetServices(ig.intervalSec)
+			services, err = ig.dbClient.SQL_GetServices(ig.intervalSec)
 			if err != nil {
 				ig.logger.LogError(err, "failed to fetch services for interval %d", ig.intervalSec)
 			}
@@ -92,18 +88,7 @@ func (ig *IntervalGroup) Boot() {
 			// TODO caching of already loaded services, we can introduce md5 of metadata to check if there is any change
 			// TODO parsing each time is quite time expensive
 
-			var check spec.CheckInterface
-			switch s.Type {
-			case key.ServiceTypeHttp:
-				check, err = http.ParseCheck(s, ig.dBClient, ig.logger)
-				break
-			case key.ServiceTypeTcp:
-				check, err = tcp.ParseCheck(s, ig.dBClient, ig.logger)
-				break
-			case key.ServiceTypeIcmp:
-				check, err = icmp.ParseCheck(s, ig.dBClient, ig.logger)
-				break
-			}
+			check, err := parse.ParseCheck(s, ig.dbClient, ig.logger)
 			if err != nil {
 				ig.logger.LogError(err, "failed to parse service type %s", s.ServiceTypeString())
 			} else {

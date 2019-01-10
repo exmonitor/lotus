@@ -353,6 +353,10 @@ func (c *Check) checkTLS(conn *tls.ConnectionState) (bool, string) {
 	return certsOK, message
 }
 
+func (c *Check) GetStringPort() string {
+	return fmt.Sprintf(":%d", c.port)
+}
+
 func (c *Check) LogResult(s *status.Status) {
 	c.log.Log("check-HTTP|id %d|reqID %s|target %s|proto %s|port %d|latency %sms|result '%t'|msg: %s", c.id, c.requestId, c.target, c.proto, c.port, key.MsFromDuration(s.Duration), s.Result, s.Message)
 }

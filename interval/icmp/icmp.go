@@ -137,6 +137,11 @@ func (c *Check) doCheck() *status.Status {
 	return s
 }
 
+func (c *Check) GetStringPort() string {
+	// icmp has no port
+	return ""
+}
+
 func (c *Check) LogResult(s *status.Status) {
 	c.log.Log("check-ICMP|id %d|reqID %s|target %s|latency %sms|result '%t'|msg: %s", c.id, c.requestId, c.target, key.MsFromDuration(s.Duration), s.Result, s.Message)
 }
