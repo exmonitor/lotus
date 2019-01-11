@@ -66,7 +66,7 @@ func (s *Status) Set(result bool, err error, msg string) {
 		s.Message += msg
 	}
 	if err != nil {
-		s.Message += " | error:" + err.Error()
+		s.Message += ", error:" + err.Error()
 	}
 }
 

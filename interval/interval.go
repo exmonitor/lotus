@@ -63,6 +63,8 @@ func (ig *IntervalGroup) Boot() {
 	var services []*service.Service
 	var err error
 
+	ig.logger.Log("booting loop for interval %d",ig.intervalSec)
+
 	// run tick goroutine
 	tickChan := make(chan bool)
 	go intervalTick(ig.intervalSec, tickChan)

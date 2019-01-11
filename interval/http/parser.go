@@ -74,7 +74,7 @@ func ParseCheck(service *service.Service, dbClient database.ClientInterface, log
 	var rawCheck RawCheck
 	err := json.Unmarshal([]byte(service.Metadata), &rawCheck)
 	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("failed to parse ICMP json metadata for check id %d", service.ID))
+		return nil, errors.Wrap(err, fmt.Sprintf("failed to parse HTTP json metadata for check id %d", service.ID))
 	} else {
 		logger.LogDebug("Successfully parsed HTTP json metadata for check id %d", service.ID)
 	}

@@ -20,7 +20,7 @@
     "database/spec/service",
     "database/spec/status"
   ]
-  revision = "962d850fb1299d8e01e4bec70f067ab05367b957"
+  revision = "346d1d005a4af0368cce0b12376165d82e09dad9"
 
 [[projects]]
   branch = "master"
@@ -96,7 +96,7 @@
     "ipv4",
     "ipv6"
   ]
-  revision = "be1c187aa6c66b9daa1d9461c228d17e9dd2cab7"
+  revision = "915654e7eabcea33ae277abbecf52f0d8b7a9fdc"
 
 [[projects]]
   name = "google.golang.org/appengine"
