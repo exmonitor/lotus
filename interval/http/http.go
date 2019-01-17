@@ -334,7 +334,7 @@ func (c *Check) getPostData() *strings.Reader {
 }
 
 func (c *Check) url() string {
-	return fmt.Sprintf("%s://%s/%s", c.proto, c.target, c.query)
+	return fmt.Sprintf("%s://%s:%d/%s", c.proto, c.target, c.port, c.query)
 }
 
 // check TTL of tls certs
