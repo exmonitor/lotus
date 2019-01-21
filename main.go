@@ -162,6 +162,8 @@ func catchOSSignals(l *exlogger.Logger, dbClient database.ClientInterface) {
 		s := <-c
 		// be sure to close log files
 		if flags.LogToFile {
+			l.Log(">> Caught signal %s, exiting ...",s.String())
+			l.LogError(nil,">> Caught signal %s, exiting ...",s.String())
 			l.CloseLogs()
 		}
 		// close DB Connection
