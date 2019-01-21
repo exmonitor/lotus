@@ -1,0 +1,23 @@
+[Unit]
+Description=watcher
+
+[Service]
+EnvironmentFile=/opt/alertea/config
+ExecStart=/bin/bash -c '\
+        /opt/alertea/watcher/watcher \
+        --log-to-file=${LOG_TO_FILE} \
+        --log-file=${LOG_FILE} \
+        --log-error-file=${LOG_ERROR_FILE} \
+        --db-driver="${DB_DRIVER}" \
+        --maria-user="${MARIA_USER}" \
+        --maria-password="${MARIA_PASSWORD}" \
+        --maria-database-name="${MARIA_DB}" \
+        --debug \
+        --time-profiling \
+        --cache \
+        --cache-ttl=5m '
+ExecStop=/bin/bash -c 'pkill watcher'
+
+
+[Install]
+WantedBy=multi-user.target

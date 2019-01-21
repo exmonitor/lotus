@@ -168,6 +168,6 @@ func catchOSSignals(l *exlogger.Logger, dbClient database.ClientInterface) {
 		dbClient.Close()
 
 		fmt.Printf("\n>> Caught signal %s, exiting ...\n\n", s.String())
-		os.Exit(1)
+		os.Exit(0)
 	}()
 }
