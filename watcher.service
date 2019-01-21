@@ -5,9 +5,9 @@ Description=watcher
 EnvironmentFile=/opt/alertea/config
 ExecStart=/bin/bash -c '\
         /opt/alertea/watcher/watcher \
-        --log-to-file=${LOG_TO_FILE} \
-        --log-file=${LOG_FILE} \
-        --log-error-file=${LOG_ERROR_FILE} \
+        --log-to-file=${WATCHER_LOG_TO_FILE} \
+        --log-file=${WATCHER_LOG_FILE} \
+        --log-error-file=${WATCHER_LOG_ERROR_FILE} \
         --db-driver="${DB_DRIVER}" \
         --maria-user="${MARIA_USER}" \
         --maria-password="${MARIA_PASSWORD}" \
